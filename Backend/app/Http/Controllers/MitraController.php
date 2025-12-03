@@ -22,10 +22,10 @@ class MitraController extends Controller
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'idMitra' => 'required|string|unique:mitra,idMitra',
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:mitra,email',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:500',
+            'Nama_Mitra' => 'required|string|max:255',
+            'Email_Mitra' => 'required|string|email|max:255|unique:mitra,Email_Mitra',
+            'Password_Mitra' => 'required|string|min:8',
+            'NoTelp_Mitra' => 'required|string|max:20',
         ]);
     
         if ($validator->fails()) {
@@ -39,11 +39,10 @@ class MitraController extends Controller
         try {
             $mitra = Mitra::create([
                 'idMitra' => $request->idMitra,
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'phone' => $request->phone,
-                'address' => $request->address,
+                'Nama_Mitra' => $request->Nama_Mitra,
+                'Email_Mitra' => $request->Email_Mitra,
+                'Password_Mitra' => Hash::make($request->Password_Mitra),
+                'NoTelp_Mitra' => $request->NoTelp_Mitra,
             ]);
 
         return response()->json([

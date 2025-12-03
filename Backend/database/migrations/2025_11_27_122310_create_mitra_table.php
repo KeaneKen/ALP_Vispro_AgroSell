@@ -13,14 +13,12 @@ return new class extends Migration
     {
         Schema::create('mitra', function (Blueprint $table) {
             $table->string('idMitra')->primary();
-            $table->string('idPerusahaan');
             $table->string('Nama_Mitra');
             $table->string('Email_Mitra')->unique();
             $table->string('Password_Mitra');
             $table->string('NoTelp_Mitra');
             $table->timestamps();
             
-            $table->foreign('idPerusahaan')->references('idPerusahaan')->on('perusahaan')->onDelete('cascade');
         });
     }
 
