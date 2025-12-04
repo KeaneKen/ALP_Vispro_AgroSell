@@ -16,7 +16,7 @@ class PaymentController extends Controller
     public function index()
     {
         try {
-            $payments = Payment::with(['order', 'mitra'])->get();
+            $payments = Payment::with('mitra')->get();
             return response()->json([
                 'success' => true,
                 'data' => $payments
@@ -47,14 +47,15 @@ class PaymentController extends Controller
     }
 
     /**
-     * Process a new payment
+     * Store a new payment
      */
-    public function processPayment(Request $request)
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'idPayment' => 'required|string|unique:payment,idPayment',
             'idCart' => 'required|string|exists:cart,idCart',
-            'Total_Harga' => 'required|numeric',
+            'Total_Harga' => 'required|numeric|min:0',
+            'payment_method' => 'nullable|string|max:50',
+            'payment_details' => 'nullable|array',
         ]);
 
         if ($validator->fails()) {
@@ -68,7 +69,6 @@ class PaymentController extends Controller
             // Create payment record
             $payment = Payment::create([
                 'idPayment' => $this->generatePaymentId(),
-                'idOrder' => $request->idOrder,
                 'idMitra' => $request->user()->idMitra ?? null,
                 'amount' => $request->amount,
                 'payment_method' => $request->payment_method,
@@ -94,7 +94,7 @@ class PaymentController extends Controller
     public function show($id)
     {
         try {
-            $payment = Payment::with(['order', 'mitra'])->find($id);
+            $payment = Payment::with(['mitra'])->find($id);
 
             if (!$payment) {
                 return response()->json([
@@ -150,14 +150,6 @@ class PaymentController extends Controller
                 'confirmed_at' => now(),
             ]);
 
-            // Update order status based on payment status
-            $order = $payment->order;
-            if ($request->status === 'completed') {
-                $order->update(['status' => 'confirmed']);
-            } elseif ($request->status === 'failed' || $request->status === 'cancelled') {
-                $order->update(['status' => 'cancelled']);
-            }
-
             return response()->json([
                 'success' => true,
                 'message' => 'Payment status updated successfully',
@@ -179,7 +171,7 @@ class PaymentController extends Controller
     public function getByMitra($mitraId)
     {
         try {
-            $payments = Payment::with(['order'])
+            $payments = Payment::with(['mitra'])
                              ->where('idMitra', $mitraId)
                              ->orderBy('paid_at', 'desc')
                              ->get();
@@ -203,7 +195,7 @@ class PaymentController extends Controller
     public function getByStatus($status)
     {
         try {
-            $payments = Payment::with(['order', 'mitra'])
+            $payments = Payment::with('mitra')
                              ->where('status', $status)
                              ->orderBy('paid_at', 'desc')
                              ->get();
