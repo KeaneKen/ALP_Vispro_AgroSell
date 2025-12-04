@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
-use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -37,10 +36,9 @@ class PaymentController extends Controller
     public function processPayment(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'idOrder' => 'required|string|exists:orders,idOrder',
-            'amount' => 'required|numeric|min:0',
-            'payment_method' => 'required|in:bank_transfer,e_wallet,cash,credit_card',
-            'payment_details' => 'nullable|array',
+            'idPayment' => 'required|string|unique:payment,idPayment',
+            'idCart' => 'required|string|exists:cart,idCart',
+            'Total_Harga' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {

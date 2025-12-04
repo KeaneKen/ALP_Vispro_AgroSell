@@ -19,9 +19,23 @@ class MitraController extends Controller
         }
     }
 
+    private function generateMitraId() {
+        $lastMitra = Mitra::orderBy('idMitra', 'desc')->first();
+        
+        if (!$lastMitra) {
+            return 'M001';
+        }
+        
+        // Extract the numeric part from the last ID
+        $lastNumber = intval(substr($lastMitra->idMitra, 1));
+        $newNumber = $lastNumber + 1;
+        
+        // Format with leading zeros (3 digits)
+        return 'M' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+    }
+
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'idMitra' => 'required|string|unique:mitra,idMitra',
             'Nama_Mitra' => 'required|string|max:255',
             'Email_Mitra' => 'required|string|email|max:255|unique:mitra,Email_Mitra',
             'Password_Mitra' => 'required|string|min:8',
@@ -38,7 +52,7 @@ class MitraController extends Controller
 
         try {
             $mitra = Mitra::create([
-                'idMitra' => $request->idMitra,
+                'idMitra' => $this->generateMitraId(),
                 'Nama_Mitra' => $request->Nama_Mitra,
                 'Email_Mitra' => $request->Email_Mitra,
                 'Password_Mitra' => Hash::make($request->Password_Mitra),
@@ -56,6 +70,21 @@ class MitraController extends Controller
                 'message' => 'Failed to create mitra',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function show($idMitra) {
+        try {
+            $mitra = Mitra::findOrFail($idMitra);
+            return response()->json([
+                'success' => true,
+                'data' => $mitra
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mitra not found'
+            ], 404);
         }
     }
 }
