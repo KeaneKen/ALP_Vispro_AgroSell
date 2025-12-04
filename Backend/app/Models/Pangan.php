@@ -16,7 +16,6 @@ class Pangan extends Model
 
     protected $fillable = [
         'idPangan',
-        'idMitra',
         'Nama_Pangan',
         'Deskripsi_Pangan',
         'Harga_Pangan',
@@ -30,11 +29,6 @@ class Pangan extends Model
     ];
 
     // Relationships
-    public function mitra()
-    {
-        return $this->belongsTo(Mitra::class, 'idMitra', 'idMitra');
-    }
-
     public function carts()
     {
         return $this->hasMany(Cart::class, 'idPangan', 'idPangan');
