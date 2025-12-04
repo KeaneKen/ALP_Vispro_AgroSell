@@ -12,30 +12,44 @@ class CartController extends Controller
     public function index()
     {
         $carts = Cart::with('pangan')->get();
-
+        
         return response()->json([
             'success' => true,
+            'message' => 'Cart items retrieved successfully',
             'data' => $carts,
         ], 200);
+    }
+    
+    private function generateCartId()
+    {
+        $lastCart = Cart::orderBy('idCart', 'desc')->first();
+        
+        if (!$lastCart) {
+            return 'C001';
+        }
+        
+        // Extract the numeric part from the last ID
+        $lastNumber = intval(substr($lastCart->idCart, 1));
+        $newNumber = $lastNumber + 1;
+        
+        // Format with leading zeros (3 digits)
+        return 'C' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'idCart' => 'required|string|unique:cart,idCart',
+            // Remove idCart from validation
             'idPangan' => 'required|string|exists:pangan,idPangan',
             'Jumlah_Pembelian' => 'required|integer|min:1',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $cart = Cart::create($validator->validated());
+        // Use auto-generated ID
+        $cart = Cart::create([
+            'idCart' => $this->generateCartId(),
+            'idPangan' => $request->idPangan,
+            'Jumlah_Pembelian' => $request->Jumlah_Pembelian,
+        ]);
 
         return response()->json([
             'success' => true,
@@ -50,16 +64,18 @@ class CartController extends Controller
 
         if (! $cart) {
             return response()->json([
-                'success' => false,
-                'message' => 'Cart item not found',
+            'success' => false,
+            'message' => 'Cart item not found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
+            // 'message' => 'Cart item retrieved successfully',
             'data' => $cart,
         ], 200);
     }
+
 
     public function update(Request $request, string $id)
     {

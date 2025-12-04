@@ -30,6 +30,22 @@ class PaymentController extends Controller
         }
     }
 
+    private function generatePaymentId()
+    {
+        $lastPayment = Payment::orderBy('idPayment', 'desc')->first();
+        
+        if (!$lastPayment) {
+            return 'PAY001';
+        }
+        
+        // Extract the numeric part from the last ID
+        $lastNumber = intval(substr($lastPayment->idPayment, 3));
+        $newNumber = $lastNumber + 1;
+        
+        // Format with leading zeros (3 digits)
+        return 'PAY' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+    }
+
     /**
      * Process a new payment
      */
@@ -51,7 +67,7 @@ class PaymentController extends Controller
 
             // Create payment record
             $payment = Payment::create([
-                'idPayment' => 'PAY-' . Str::upper(Str::random(10)),
+                'idPayment' => $this->generatePaymentId(),
                 'idOrder' => $request->idOrder,
                 'idMitra' => $request->user()->idMitra ?? null,
                 'amount' => $request->amount,
@@ -70,6 +86,8 @@ class PaymentController extends Controller
 
         }
 
+
+    
     /**
      * Display the specified payment
      */

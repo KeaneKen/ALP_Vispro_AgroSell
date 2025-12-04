@@ -19,6 +19,7 @@ class MitraController extends Controller
         }
     }
 
+    // Generate Mitra ID with M prefix (M001, M002, ...)
     private function generateMitraId() {
         $lastMitra = Mitra::orderBy('idMitra', 'desc')->first();
         
@@ -73,11 +74,13 @@ class MitraController extends Controller
         }
     }
 
+    // Show mitra details
     public function show($idMitra) {
         try {
             $mitra = Mitra::findOrFail($idMitra);
             return response()->json([
                 'success' => true,
+                'message' => 'Mitra retrieved successfully',
                 'data' => $mitra
             ], 200);
         } catch (\Exception $e) {

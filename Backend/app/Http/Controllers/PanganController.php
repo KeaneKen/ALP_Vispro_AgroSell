@@ -119,6 +119,7 @@ class PanganController extends Controller
             $pangan = Pangan::findOrFail($idPangan);
             return response()->json([
                 'success' => true,
+                'message' => 'Pangan retrieved successfully',
                 'data' => $pangan
             ], 200);
         } catch (\Exception $e) {

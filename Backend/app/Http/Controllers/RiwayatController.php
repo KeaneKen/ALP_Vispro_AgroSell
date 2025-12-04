@@ -18,10 +18,27 @@ class RiwayatController extends Controller
         ], 200);
     }
 
+    // Fixed method name and logic
+    private function generateRiwayatId()
+    {
+        $lastRiwayat = Riwayat::orderBy('idHistory', 'desc')->first();
+        
+        if (!$lastRiwayat) {
+            return 'R001';
+        }
+        
+        // Extract the numeric part from the last ID (fixed field name)
+        $lastNumber = intval(substr($lastRiwayat->idHistory, 1));
+        $newNumber = $lastNumber + 1;
+        
+        // Format with leading zeros (3 digits)
+        return 'R' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'idHistory' => 'required|string|unique:riwayat,idHistory',
+            // Removed idHistory from validation - now auto-generated
             'idPayment' => 'required|string|exists:payment,idPayment',
         ]);
 
@@ -33,13 +50,24 @@ class RiwayatController extends Controller
             ], 422);
         }
 
-        $history = Riwayat::create($validator->validated());
+        try {
+            $history = Riwayat::create([
+                'idHistory' => $this->generateRiwayatId(),
+                'idPayment' => $request->idPayment,
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'History Created',
-            'data' => $history->load('payment'),
-        ], 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'History Created',
+                'data' => $history->load('payment'),
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create history',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(string $id)
