@@ -165,9 +165,7 @@ class PaymentController extends Controller
         }
     }
 
-    /**
-     * Get payments by mitra
-     */
+    // Get payments by mitra
     public function getByMitra($mitraId)
     {
         try {

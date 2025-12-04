@@ -11,6 +11,7 @@ class CartController extends Controller
 {
     public function index()
     {
+        // Retrieve all cart items with related pangan details
         $carts = Cart::with('pangan')->get()->map(function($cart) {
             return [
             'idCart' => $cart->idCart,
@@ -23,6 +24,7 @@ class CartController extends Controller
             'updated_at' => $cart->updated_at,
             ];
         });
+
         
         return response()->json([
             'success' => true,
