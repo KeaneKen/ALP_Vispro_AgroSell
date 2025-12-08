@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_colors.dart';
 import 'core/widgets/app_navbar.dart';
-// import 'splash/view/splash_view.dart';
-// import 'splash/view/login_view.dart';
-import 'splash/splash_route.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,10 +22,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.background,
         useMaterial3: true,
       ),
-      // home: const MainScreen(),
-      initialRoute: '/splash', // <-- ubah '/splash' ke '/login' jika mau langsung login
-      routes: SplashRoute.getRoutes(),
-      onGenerateRoute: SplashRoute.generateRoute,
+      home: const MainScreen(),
     );
   }
 }
