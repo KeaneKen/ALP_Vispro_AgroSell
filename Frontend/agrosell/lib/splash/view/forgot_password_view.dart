@@ -49,122 +49,124 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        child: Padding(
+      body: Center(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 60),
-              
-              // Back Button
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: AppColors.textPrimary,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Header
-              Center(
-                child: Text(
-                  'AgroSell',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 30),
-              
-              // Title
-              Text(
-                'Lupa Password',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              
-              const SizedBox(height: 8),
-              
-              Text(
-                'Masukkan email Anda untuk mereset password',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              
-              const SizedBox(height: 30),
-              
-              // Email Field
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: AppColors.textSecondary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.primary),
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 30),
-              
-              // Reset Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _viewModel.isLoading
-                      ? null
-                      : () => _viewModel.sendResetEmail(_emailController.text),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.textLight,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: _viewModel.isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Kirim Link Reset',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Back to Login
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+              ],
+            ),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Center(
                   child: Text(
-                    'Kembali ke Login',
+                    'AgroSell',
                     style: TextStyle(
-                      color: AppColors.secondary,
+                      fontSize: 32,
                       fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
-              ),
-            ],
+                
+                const SizedBox(height: 30),
+                
+                // Title
+                Text(
+                  'Lupa Password',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
+                
+                Text(
+                  'Masukkan email Anda untuk mereset password',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Email Field
+                TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: TextStyle(color: AppColors.textSecondary),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: AppColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: AppColors.primary),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Reset Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _viewModel.isLoading
+                        ? null
+                        : () => _viewModel.sendResetEmail(_emailController.text),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.textLight,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: _viewModel.isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Kirim Link Reset',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Back to Login
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Kembali ke Login',
+                      style: TextStyle(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

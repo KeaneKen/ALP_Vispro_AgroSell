@@ -22,9 +22,9 @@ class _LoginViewState extends State<LoginView> {
 
   void _onViewModelChange() {
     if (_viewModel.isLoggedIn) {
-      // Navigate to main app
       // Navigator.pushReplacementNamed(context, '/home');
     }
+
     if (_viewModel.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(_viewModel.errorMessage!)),
@@ -44,168 +44,171 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 60),
-              
-              // Header
-              Center(
-                child: Text(
-                  'AgroSell',
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                /// TITLE "AgroSell"
+                Center(
+                  child: Text(
+                    'AgroSell',
+                    style: TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                /// MASUK
+                Text(
+                  'Masuk',
                   style: TextStyle(
+                    color: AppColors.textPrimary,
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
                   ),
                 ),
-              ),
-              
-              const SizedBox(height: 30),
-              
-              // Title
-              Text(
-                'Masuk',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              
-              const SizedBox(height: 8),
-              
-              Text(
-                'Masuk ke akun yang telah terdaftar',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              
-              const SizedBox(height: 30),
-              
-              // Email Field
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: AppColors.textSecondary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.primary),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Masuk menggunakan akun yang telah terdaftar',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
                   ),
                 ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Password Field
-              TextField(
-                controller: _passwordController,
-                obscureText: !_viewModel.isPasswordVisible,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: AppColors.textSecondary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: AppColors.primary),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _viewModel.isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: AppColors.textSecondary,
-                    ),
-                    onPressed: _viewModel.togglePasswordVisibility,
+
+                const SizedBox(height: 30),
+
+                /// EMAIL FIELD
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'Masukkan email',
+                    prefixIcon: const Icon(Icons.email, color: AppColors.textPrimary),
                   ),
                 ),
-              ),
-              
-              const SizedBox(height: 10),
-              
-              // Forgot Password
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/forgot-password');
-                  },
-                  child: Text(
-                    'Lupa Password?',
-                    style: TextStyle(color: AppColors.secondary),
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 30),
-              
-              // Login Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _viewModel.isLoading
-                      ? null
-                      : () => _viewModel.login(
-                            _emailController.text,
-                            _passwordController.text,
-                          ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.textLight,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+
+                const SizedBox(height: 20),
+
+                /// PASSWORD FIELD
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: !_viewModel.isPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    hintText: 'Masukkan password',
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _viewModel.isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: _viewModel.togglePasswordVisibility,
                     ),
                   ),
-                  child: _viewModel.isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Masuk',
-                          style: TextStyle(fontSize: 16),
-                        ),
                 ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Register Link
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Belum memiliki akun? ',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                    TextButton(
+
+                /// LUPA PASSWORD
+                Container(
+                  margin: const EdgeInsets.only(top: 0),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/register');
+                        Navigator.pushNamed(context, '/forgot-password');
                       },
                       child: Text(
-                        'Daftar terlebih dahulu',
+                        'Lupa Password?',
                         style: TextStyle(
-                          color: AppColors.secondary,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 30),
+
+                /// BUTTON LOGIN
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _viewModel.isLoading
+                        ? null
+                        : () => _viewModel.login(
+                              _emailController.text,
+                              _passwordController.text,
+                            ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: AppColors.textLight,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    child: _viewModel.isLoading
+                        ? const CircularProgressIndicator(color: AppColors.primaryLight)
+                        : const Text('Masuk'),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                /// REGISTER
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/register');
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        text: 'Belum memiliki akun? ',
+                        style: TextStyle(color: AppColors.textSecondary),
+                        children: [
+                          TextSpan(
+                            text: 'Daftar sekarang',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

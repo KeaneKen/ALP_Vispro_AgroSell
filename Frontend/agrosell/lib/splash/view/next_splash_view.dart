@@ -18,8 +18,10 @@ class NextSplashView extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.primaryLight.withOpacity(0.1),
+                    // AppColors.primaryLight.withOpacity(0.1),
                     AppColors.background,
+                    AppColors.background,
+                    AppColors.primaryLight.withOpacity(0.3),
                   ],
                 ),
               ),
@@ -31,28 +33,28 @@ class NextSplashView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // App Logo/Icon
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.agriculture,
-                    size: 60,
-                    color: Colors.white,
-                  ),
-                ),
+                // // App Logo/Icon
+                // Container(
+                //   width: 120,
+                //   height: 120,
+                //   decoration: BoxDecoration(
+                //     color: AppColors.primary,
+                //     borderRadius: BorderRadius.circular(20),
+                //   ),
+                //   child: const Icon(
+                //     Icons.agriculture,
+                //     size: 60,
+                //     color: Colors.white,
+                //   ),
+                // ),
                 
-                const SizedBox(height: 24),
+                // const SizedBox(height: 24),
                 
                 // App Name
                 Text(
                   'AgroSell',
                   style: TextStyle(
-                    fontSize: 36,
+                    fontSize: 48,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
@@ -62,9 +64,10 @@ class NextSplashView extends StatelessWidget {
                 
                 // Tagline
                 Text(
-                  'Platform Digital Pertanian Terdepan',
+                  'AgroSell merupakan platform digital\npenjualan hasil panen pertanian',
+                  
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,

@@ -26,7 +26,16 @@ class _SplashViewState extends State<SplashView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            
+
+            Text(
+              'Selamat Datang di',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textSecondary,
+              ),
+            ),
+
             Text(
               'AgroSell',
               style: TextStyle(
@@ -35,14 +44,8 @@ class _SplashViewState extends State<SplashView> {
                 color: AppColors.primary,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Platform Digital Pertanian',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
-            ),
+            
+            
           ],
         ),
       ),
