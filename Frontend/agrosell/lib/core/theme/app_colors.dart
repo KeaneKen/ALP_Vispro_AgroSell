@@ -14,7 +14,7 @@ class AppColors {
   static const Color accent = Color(0xFF40250D); // Dark brown - untuk text emphasis
   
   // Background Colors
-  static const Color background = Color(0xFFFBFBF9); // Cream - background utama
+  static const Color background = Color(0xFFFEFAE0); // Cream yellow - background utama
   static const Color surface = Color(0xFFFFFFFF); // White - untuk cards, containers
   
   // Text Colors
