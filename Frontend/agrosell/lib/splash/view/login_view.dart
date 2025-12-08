@@ -84,7 +84,7 @@ class _LoginViewState extends State<LoginView> {
                   'Masuk',
                   style: TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 32,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -106,7 +106,6 @@ class _LoginViewState extends State<LoginView> {
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    hintText: 'Masukkan email',
                     prefixIcon: const Icon(Icons.email, color: AppColors.textPrimary),
                   ),
                 ),
@@ -119,7 +118,7 @@ class _LoginViewState extends State<LoginView> {
                   obscureText: !_viewModel.isPasswordVisible,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    hintText: 'Masukkan password',
+                    
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(

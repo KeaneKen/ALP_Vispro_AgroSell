@@ -86,7 +86,7 @@ class _RegisterViewState extends State<RegisterView> {
                 Text(
                   'Daftar',
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
@@ -97,7 +97,7 @@ class _RegisterViewState extends State<RegisterView> {
                 Text(
                   'Silahkan membuat akun baru',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 12,
                     color: AppColors.textPrimary,
                   ),
                 ),
@@ -109,8 +109,21 @@ class _RegisterViewState extends State<RegisterView> {
                   controller: _usernameController,
                   decoration: InputDecoration(
                     labelText: 'Username',
-                    hintText: 'Masukkan Username',
+                    
                     prefixIcon: Icon(Icons.person, color: AppColors.textPrimary),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Phone Number Field
+                TextField(
+                  controller: _phoneNumberController,
+                  obscureText: !_viewModel.isPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Nomor HP',
+                    
+                    prefixIcon: Icon(Icons.phone, color: AppColors.textPrimary),
                   ),
                 ),
                 
@@ -121,9 +134,9 @@ class _RegisterViewState extends State<RegisterView> {
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    hintText: 'Masukkan Email',
                     prefixIcon: Icon(Icons.email, color: AppColors.textPrimary),
                   ),
+                  
                 ),
                 
                 const SizedBox(height: 20),
@@ -134,7 +147,7 @@ class _RegisterViewState extends State<RegisterView> {
                   obscureText: !_viewModel.isPasswordVisible,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    hintText: 'Masukkan password',
+                    
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -147,18 +160,7 @@ class _RegisterViewState extends State<RegisterView> {
                   ),
                 ),
                 
-                const SizedBox(height: 30),
-
-                // Phone Number Field
-                TextField(
-                  controller: _phoneNumberController,
-                  obscureText: !_viewModel.isPasswordVisible,
-                  decoration: InputDecoration(
-                    labelText: 'Nomor HP',
-                    hintText: 'Masukkan Nomor HP',
-                    prefixIcon: Icon(Icons.phone, color: AppColors.textPrimary),
-                  ),
-                ),
+                
                 
                 const SizedBox(height: 30),
                 

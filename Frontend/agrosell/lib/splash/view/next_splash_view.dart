@@ -21,7 +21,7 @@ class NextSplashView extends StatelessWidget {
                     // AppColors.primaryLight.withOpacity(0.1),
                     AppColors.background,
                     AppColors.background,
-                    AppColors.primaryLight.withOpacity(0.3),
+                    
                   ],
                 ),
               ),
@@ -68,7 +68,7 @@ class NextSplashView extends StatelessWidget {
                   
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -78,9 +78,9 @@ class NextSplashView extends StatelessWidget {
           
           // Bottom button
           Positioned(
-            bottom: 40,
-            left: 20,
-            right: 20,
+            bottom: 300,
+            left: 30,
+            right: 30,
             child: ElevatedButton(
               onPressed: () {
                 Navigator.pushReplacementNamed(context, '/login');

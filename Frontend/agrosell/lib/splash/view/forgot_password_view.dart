@@ -74,7 +74,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                   child: Text(
                     'AgroSell',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 48,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
                     ),
@@ -98,27 +98,19 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 Text(
                   'Masukkan email Anda untuk mereset password',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 
                 const SizedBox(height: 30),
                 
                 // Email Field
-                TextField(
+                TextFormField( 
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    labelStyle: TextStyle(color: AppColors.textSecondary),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: AppColors.primary),
-                    ),
+                    prefixIcon: const Icon(Icons.email, color: AppColors.textPrimary),
                   ),
                 ),
                 
@@ -159,7 +151,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                     child: Text(
                       'Kembali ke Login',
                       style: TextStyle(
-                        color: AppColors.secondary,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
