@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../viewmodel/catalog_viewmodel.dart';
+import '../../product_detail/product_detail_route.dart';
 
 class CatalogView extends StatefulWidget {
   final String? initialFilter;
@@ -193,7 +194,7 @@ class _CatalogViewState extends State<CatalogView> {
   Widget _buildProductCard(Map<String, String> product) {
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to product detail
+        ProductDetailRoute.navigate(context, product);
       },
       child: Container(
         decoration: BoxDecoration(

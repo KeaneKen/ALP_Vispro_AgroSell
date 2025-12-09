@@ -25,6 +25,7 @@ class DashboardViewModel extends ChangeNotifier {
     _products = [
       {
         'name': 'Gabah Kering Giling (GKG)',
+        'category': 'Padi',
         'price': 'Rp 5.800/kg',
         'stock': 'Stok: 500kg',
         'rating': '4.8',
@@ -32,6 +33,7 @@ class DashboardViewModel extends ChangeNotifier {
       },
       {
         'name': 'Padi Varietas IR64',
+        'category': 'Padi',
         'price': 'Rp 11.500/kg',
         'stock': 'Stok: 800kg',
         'rating': '4.9',
@@ -39,6 +41,7 @@ class DashboardViewModel extends ChangeNotifier {
       },
       {
         'name': 'Jagung Pipilan Kering',
+        'category': 'jagung',
         'price': 'Rp 4.200/kg',
         'stock': 'Stok: 300kg',
         'rating': '4.6',
@@ -46,6 +49,7 @@ class DashboardViewModel extends ChangeNotifier {
       },
       {
         'name': 'Cabai Merah Keriting',
+        'category': 'cabai',
         'price': 'Rp 32.000/kg',
         'stock': 'Stok: 150kg',
         'rating': '4.7',
@@ -53,6 +57,7 @@ class DashboardViewModel extends ChangeNotifier {
       },
       {
         'name': 'Cabai Rawit Hijau',
+        'category': 'cabai',
         'price': 'Rp 45.000/kg',
         'stock': 'Stok: 100kg',
         'rating': '4.5',
