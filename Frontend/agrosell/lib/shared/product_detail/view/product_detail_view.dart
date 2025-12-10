@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../viewmodel/product_detail_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../cart/cart_route.dart';
+import '../../chat/chat_route.dart';
 
 class ProductDetailView extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -314,7 +315,7 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                   // Chat Button
                   OutlinedButton.icon(
                     onPressed: () {
-                      // TODO: Navigate to chat
+                      ChatRoute.navigate(context, 'BUMDes Makmur Jaya', 'bumdes_001');
                     },
                     icon: const Icon(Icons.chat_bubble_outline),
                     label: const Text('Chat'),

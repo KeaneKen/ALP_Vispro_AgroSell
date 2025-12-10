@@ -3,6 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import '../viewmodel/dashboard_viewmodel.dart';
 import '../../product_detail/product_detail_route.dart';
 import '../../cart/cart_route.dart';
+import '../../chat_list/chat_list_route.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -68,7 +69,7 @@ class _DashboardViewState extends State<DashboardView> {
                   // Icon Chat
                   GestureDetector(
                     onTap: () {
-                      // TODO: Navigate to chat
+                      ChatListRoute.navigate(context);
                     },
                     child: Container(
                       width: 48,

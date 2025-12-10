@@ -3,6 +3,7 @@ import 'core/theme/app_colors.dart';
 import 'core/widgets/app_navbar.dart';
 import 'shared/dashboard/view/dashboard_view.dart';
 import 'shared/catalog/view/catalog_view.dart';
+import 'shared/notification/view/notification_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,7 +43,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = const [
     DashboardView(),
     CatalogView(),
-    PlaceholderScreen(title: 'Notifikasi', icon: Icons.notifications_rounded),
+    NotificationView(),
     PlaceholderScreen(title: 'Profile', icon: Icons.person_rounded),
   ];
 

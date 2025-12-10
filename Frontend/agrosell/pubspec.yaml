@@ -37,6 +37,7 @@ dependencies:
   
   # Curved Navigation Bar
   curved_navigation_bar: ^1.0.6
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
