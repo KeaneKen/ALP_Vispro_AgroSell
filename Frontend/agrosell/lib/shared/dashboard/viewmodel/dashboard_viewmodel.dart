@@ -30,6 +30,7 @@ class DashboardViewModel extends ChangeNotifier {
         'stock': 'Stok: 500kg',
         'rating': '4.8',
         'image': 'assets/images/padi 1.jpg',
+        'isPreOrder': 'false',
       },
       {
         'name': 'Padi Varietas IR64',
@@ -38,6 +39,7 @@ class DashboardViewModel extends ChangeNotifier {
         'stock': 'Stok: 800kg',
         'rating': '4.9',
         'image': 'assets/images/padi 2.jpg',
+        'isPreOrder': 'true',
       },
       {
         'name': 'Jagung Pipilan Kering',
@@ -46,6 +48,7 @@ class DashboardViewModel extends ChangeNotifier {
         'stock': 'Stok: 300kg',
         'rating': '4.6',
         'image': 'assets/images/jagung 1.jpg',
+        'isPreOrder': 'true',
       },
       {
         'name': 'Cabai Merah Keriting',
@@ -54,6 +57,7 @@ class DashboardViewModel extends ChangeNotifier {
         'stock': 'Stok: 150kg',
         'rating': '4.7',
         'image': 'assets/images/cabe 1.jpg',
+        'isPreOrder': 'false',
       },
       {
         'name': 'Cabai Rawit Hijau',
@@ -62,6 +66,7 @@ class DashboardViewModel extends ChangeNotifier {
         'stock': 'Stok: 100kg',
         'rating': '4.5',
         'image': 'assets/images/cabe 2.jpg',
+        'isPreOrder': 'true',
       },
     ];
 

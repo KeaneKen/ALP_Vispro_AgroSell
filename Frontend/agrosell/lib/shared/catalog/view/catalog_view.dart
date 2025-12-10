@@ -94,16 +94,21 @@ class _CatalogViewState extends State<CatalogView> {
           // Filter Buttons
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                _buildFilterButton('ALL'),
-                const SizedBox(width: 8),
-                _buildFilterButton('Padi'),
-                const SizedBox(width: 8),
-                _buildFilterButton('jagung'),
-                const SizedBox(width: 8),
-                _buildFilterButton('cabai'),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterButton('ALL'),
+                  const SizedBox(width: 8),
+                  _buildFilterButton('Padi'),
+                  const SizedBox(width: 8),
+                  _buildFilterButton('jagung'),
+                  const SizedBox(width: 8),
+                  _buildFilterButton('cabai'),
+                  const SizedBox(width: 8),
+                  _buildFilterButton('PO'),
+                ],
+              ),
             ),
           ),
 
@@ -165,23 +170,21 @@ class _CatalogViewState extends State<CatalogView> {
       animation: _viewModel,
       builder: (context, child) {
         final isSelected = _viewModel.selectedFilter == label;
-        return Expanded(
-          child: GestureDetector(
-            onTap: () => _viewModel.setFilter(label),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryLight : Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Center(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: isSelected ? AppColors.textPrimary : Colors.grey[600],
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                    fontSize: 13,
-                  ),
+        return GestureDetector(
+          onTap: () => _viewModel.setFilter(label),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            decoration: BoxDecoration(
+              color: isSelected ? AppColors.primaryLight : Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? AppColors.textPrimary : Colors.grey[600],
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 13,
                 ),
               ),
             ),
@@ -212,15 +215,32 @@ class _CatalogViewState extends State<CatalogView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: product['image'] != null
-                    ? Image.asset(
-                        product['image']!,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
+              child: Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    child: product['image'] != null
+                        ? Image.asset(
+                            product['image']!,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight.withOpacity(0.3),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.grass,
+                                    size: 60,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
                             decoration: BoxDecoration(
                               color: AppColors.primaryLight.withOpacity(0.3),
                             ),
@@ -231,21 +251,37 @@ class _CatalogViewState extends State<CatalogView> {
                                 color: AppColors.primary,
                               ),
                             ),
-                          );
-                        },
-                      )
-                    : Container(
+                          ),
+                  ),
+                  // Pre-Order Badge
+                  if (product['isPreOrder'] == 'true')
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryLight.withOpacity(0.3),
+                          color: AppColors.secondary,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.grass,
-                            size: 60,
-                            color: AppColors.primary,
+                        child: const Text(
+                          'PO',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
+                    ),
+                ],
               ),
             ),
             Padding(

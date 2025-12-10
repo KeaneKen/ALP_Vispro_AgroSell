@@ -28,6 +28,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 500kg',
         'rating': '4.8',
         'image': 'assets/images/padi 1.jpg',
+        'isPreOrder': 'false',
       },
       {
         'name': 'Padi Varietas IR64',
@@ -36,6 +37,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 800kg',
         'rating': '4.9',
         'image': 'assets/images/padi 2.jpg',
+        'isPreOrder': 'true',
       },
       {
         'name': 'Padi Organik Premium',
@@ -44,6 +46,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 300kg',
         'rating': '4.7',
         'image': 'assets/images/padi 3.jpg',
+        'isPreOrder': 'false',
       },
       // Produk Jagung
       {
@@ -53,6 +56,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 300kg',
         'rating': '4.6',
         'image': 'assets/images/jagung 1.jpg',
+        'isPreOrder': 'true',
       },
       {
         'name': 'Jagung Manis Segar',
@@ -61,6 +65,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 250kg',
         'rating': '4.7',
         'image': 'assets/images/jagung 2.jpg',
+        'isPreOrder': 'false',
       },
       {
         'name': 'Jagung Hibrida',
@@ -69,6 +74,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 400kg',
         'rating': '4.5',
         'image': 'assets/images/jagung 3.jpg',
+        'isPreOrder': 'true',
       },
       // Produk Cabai
       {
@@ -78,6 +84,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 150kg',
         'rating': '4.7',
         'image': 'assets/images/cabe 1.jpg',
+        'isPreOrder': 'false',
       },
       {
         'name': 'Cabai Rawit Hijau',
@@ -86,6 +93,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 100kg',
         'rating': '4.5',
         'image': 'assets/images/cabe 2.jpg',
+        'isPreOrder': 'true',
       },
       {
         'name': 'Cabai Merah Besar',
@@ -94,6 +102,7 @@ class CatalogViewModel extends ChangeNotifier {
         'stock': 'Stok: 200kg',
         'rating': '4.6',
         'image': 'assets/images/cabe 3.jpg',
+        'isPreOrder': 'false',
       },
     ];
 
@@ -118,9 +127,10 @@ class CatalogViewModel extends ChangeNotifier {
   // Apply filters and search
   void _applyFilters() {
     _filteredProducts = _allProducts.where((product) {
-      // Filter by category
+      // Filter by category or pre-order
       bool matchesFilter = _selectedFilter == 'ALL' || 
-                          product['category'] == _selectedFilter;
+                          product['category'] == _selectedFilter ||
+                          (_selectedFilter == 'PO' && product['isPreOrder'] == 'true');
       
       // Filter by search query
       bool matchesSearch = _searchQuery.isEmpty ||
