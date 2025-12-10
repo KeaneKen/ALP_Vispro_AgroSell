@@ -243,6 +243,7 @@ class _ListPoViewState extends State<ListPoView> {
                                       backgroundColor: AppColors.primary,
                                       foregroundColor: Colors.white,
                                     ),
+                                    
                                     child: const Text('Hubungi'),
                                   ),
                                 ),
@@ -266,7 +267,7 @@ class _ListPoViewState extends State<ListPoView> {
       case 'proses':
         return AppColors.warning;
       case 'pending':
-        return Colors.blue;
+        return Colors.grey;
       case 'dibatalkan':
         return AppColors.error;
       default:
