@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_colors.dart';
 import 'core/widgets/app_navbar.dart';
+import 'bumdes/profile/bumdes_profile_route.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,11 +38,11 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
+  final List<Widget> _screens = [
     PlaceholderScreen(title: 'Dashboard', icon: Icons.home_rounded),
     PlaceholderScreen(title: 'Katalog', icon: Icons.grid_view_rounded),
     PlaceholderScreen(title: 'Notifikasi', icon: Icons.notifications_rounded),
-    PlaceholderScreen(title: 'Profile', icon: Icons.person_rounded),
+    const BumdesProfileRoute(),
   ];
 
   @override
