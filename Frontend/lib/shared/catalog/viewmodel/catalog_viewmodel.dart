@@ -40,7 +40,7 @@ class CatalogViewModel extends ChangeNotifier {
         return {
           'id': pangan.idPangan,
           'name': pangan.namaPangan,
-          'category': 'Pangan',
+          'category': pangan.category,
           'price': '${formatter.format(pangan.hargaPangan)}/kg',
           'stock': 'Tersedia',
           'rating': '4.5',
@@ -82,7 +82,7 @@ class CatalogViewModel extends ChangeNotifier {
     _filteredProducts = _allProducts.where((product) {
       // Filter by category or pre-order
       bool matchesFilter = _selectedFilter == 'ALL' || 
-                          product['category'] == _selectedFilter ||
+                          product['category']!.toLowerCase() == _selectedFilter.toLowerCase() ||
                           (_selectedFilter == 'PO' && product['isPreOrder'] == 'true');
       
       // Filter by search query

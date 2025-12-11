@@ -4,6 +4,7 @@ import 'core/widgets/app_navbar.dart';
 import 'shared/dashboard/view/dashboard_view.dart';
 import 'shared/catalog/view/catalog_view.dart';
 import 'shared/notification/view/notification_view.dart';
+import 'bumdes/profile/view/bumdes_profile_view.dart';
 
 void main() {
   runApp(const MyApp());
@@ -44,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
     DashboardView(),
     CatalogView(),
     NotificationView(),
-    PlaceholderScreen(title: 'Profile', icon: Icons.person_rounded),
+    BumdesProfileView(),
   ];
 
   @override

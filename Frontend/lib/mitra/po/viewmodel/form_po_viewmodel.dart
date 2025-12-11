@@ -53,14 +53,16 @@ class FormPOViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      // TODO: Submit PO to backend API
+      // await _preOrderRepository.createPreOrder(...)
+      await Future.delayed(const Duration(milliseconds: 500));
       
-      // Save PO logic here
+      debugPrint('📤 PO submitted: $_supplierName, ${_items.length} items');
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      debugPrint('❌ Error submitting PO: $e');
       _isLoading = false;
       notifyListeners();
       return false;
@@ -72,11 +74,16 @@ class FormPOViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      // TODO: Update PO in backend API
+      // await _preOrderRepository.updatePreOrder(po.id, ...)
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      debugPrint('📤 PO updated: ${po.id}');
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      debugPrint('❌ Error updating PO: $e');
       _isLoading = false;
       notifyListeners();
       return false;

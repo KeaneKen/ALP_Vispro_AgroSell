@@ -19,6 +19,7 @@ class ApiConfig {
   static const String pangans = '/pangan';
   static const String cart = '/cart';
   static const String payment = '/payment';
+  static const String payments = '/payment';
   static const String riwayat = '/riwayat';
   static const String chat = '/chat';
   static const String chatConversation = '/chat/conversation';

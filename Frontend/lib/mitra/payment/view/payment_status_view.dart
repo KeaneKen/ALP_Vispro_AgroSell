@@ -9,55 +9,21 @@ class PaymentStatusView extends StatefulWidget {
 }
 
 class _PaymentStatusViewState extends State<PaymentStatusView> {
-  // Dummy data untuk Pre Order items (SUDAH DITAMBAH DP)
-  final List<Map<String, dynamic>> preOrderItems = [
-    {
-      'title': 'Padi Segar Mayur',
-      'quantity': 100,
-      'unit': 'kg',
-      'price': 100000,
-      'status': 'Menunggu Panen',
-      'image': 'assets/images/farmer.png',
-      'dpPaid': 30000,
-    },
-    {
-      'title': 'Jagung Manis Premium',
-      'quantity': 50,
-      'unit': 'kg',
-      'price': 150000,
-      'status': 'Menunggu Panen',
-      'image': 'assets/images/farmer.png',
-      'dpPaid': 50000,
-    },
-  ];
+  // Data will be loaded from backend
+  final List<Map<String, dynamic>> preOrderItems = [];
+  final List<Map<String, dynamic>> nonPreOrderItems = [];
 
-  // Dummy data untuk Non Pre Order items
-  final List<Map<String, dynamic>> nonPreOrderItems = [
-    {
-      'title': 'Beras Organik Premium',
-      'quantity': 25,
-      'unit': 'kg',
-      'price': 50000,
-      'status': 'Siap Kirim',
-      'image': 'assets/images/farmer.png',
-    },
-    {
-      'title': 'Sayuran Segar Mix',
-      'quantity': 10,
-      'unit': 'pack',
-      'price': 75000,
-      'status': 'Siap Kirim',
-      'image': 'assets/images/farmer.png',
-    },
-    {
-      'title': 'Madu Asli Murni',
-      'quantity': 5,
-      'unit': 'botol',
-      'price': 120000,
-      'status': 'Siap Kirim',
-      'image': 'assets/images/farmer.png',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // TODO: Load payment items from backend
+    _loadPaymentItems();
+  }
+
+  Future<void> _loadPaymentItems() async {
+    // TODO: Fetch unpaid items from backend API
+    // await _paymentRepository.getUnpaidItems();
+  }
 
   @override
   Widget build(BuildContext context) {

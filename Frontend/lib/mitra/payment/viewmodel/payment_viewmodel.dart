@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 
 class PaymentViewModel extends ChangeNotifier {
-  // Payment Items
-  List<PaymentItem> _paymentItems = [
-    PaymentItem(
-      imagePath: "assets/images/farmer.png",
-      title: "Padi segar mayur",
-      price: 10000000000,
-    ),
-  ];
+  // Payment Items - loaded from cart or order
+  List<PaymentItem> _paymentItems = [];
 
   // Payment Methods
   List<PaymentMethod> _paymentMethods = [
@@ -81,11 +75,15 @@ class PaymentViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Implement actual payment API call
-      await Future.delayed(const Duration(seconds: 2));
+      // TODO: Submit payment to backend API
+      // await _paymentRepository.createPayment(...)
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      debugPrint('💳 Payment processed: $_selectedPaymentMethod, Total: $total');
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      debugPrint('❌ Error processing payment: $e');
       _isLoading = false;
       notifyListeners();
       rethrow;

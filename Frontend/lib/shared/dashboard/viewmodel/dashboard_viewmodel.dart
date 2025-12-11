@@ -40,7 +40,7 @@ class DashboardViewModel extends ChangeNotifier {
         return {
           'id': pangan.idPangan,
           'name': pangan.namaPangan,
-          'category': 'Pangan',
+          'category': pangan.category,
           'price': '${formatter.format(pangan.hargaPangan)}/kg',
           'stock': 'Tersedia',
           'rating': '4.5',

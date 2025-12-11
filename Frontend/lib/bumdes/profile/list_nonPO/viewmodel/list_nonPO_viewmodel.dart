@@ -42,51 +42,35 @@ class Order {
 class ListNonPOViewModel extends ChangeNotifier {
   List<Order> _orders = [];
   String _selectedStatus = 'SEMUA';
+  bool _isLoading = false;
 
   ListNonPOViewModel() {
-    // Load initial data
-    _orders = [
-      Order(
-        id: '1',
-        buyerName: 'Catering Tukang Las',
-        items: [
-          OrderItem(productName: 'Padi Baru', pricePerKg: 7000, quantity: 2),
-          OrderItem(productName: 'Jagung Kering', pricePerKg: 6500, quantity: 1.5),
-        ],
-        paymentStatus: 'Lunas',
-        deliveryAddress: 'Jl. Industri No. 45, Kecamatan Sambikerep, Surabaya',
-        buyerPhone: '081234567890',
-        orderDate: DateTime.now(),
-      ),
+    loadOrders();
+  }
 
-      Order(
-        id: '2',
-        buyerName: 'Resto Anak Muda',
-        items: [
-          OrderItem(productName: 'Paket Restoran', pricePerKg: 0, quantity: 0),
-        ],
-        paymentStatus: 'Lunas',
-        deliveryAddress: 'Jl. Pemuda No. 12, Kecamatan Wonokromo, Surabaya',
-        buyerPhone: '081234567891',
-        orderDate: DateTime.now(),
-      ),
+  Future<void> loadOrders() async {
+    _isLoading = true;
+    notifyListeners();
 
-      Order(
-        id: '3',
-        buyerName: 'Keane',
-        items: [
-          OrderItem(productName: 'Jagung Super Sigma', pricePerKg: 6500, quantity: 1),
-        ],
-        paymentStatus: 'Proses',
-        deliveryAddress: 'Jl. Raya Darmo Permai III No. 8, Surabaya',
-        buyerPhone: '081234567892',
-        orderDate: DateTime.now(),
-      ),
-    ];
+    try {
+      // TODO: Fetch orders from backend API
+      // await _orderRepository.getAllOrders();
+      await Future.delayed(const Duration(milliseconds: 500));
+      _orders = [];
+      
+      debugPrint('📦 Orders loaded: ${_orders.length} items');
+    } catch (e) {
+      debugPrint('❌ Error loading orders: $e');
+      _orders = [];
+    }
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   List<Order> get orders => _orders;
   String get selectedStatus => _selectedStatus;
+  bool get isLoading => _isLoading;
 
   List<String> get statusFilters => ['SEMUA', 'LUNAS', 'BELUM LUNAS', 'PROSES', 'ANTAR'];
 

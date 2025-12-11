@@ -33,12 +33,28 @@ class PanganController extends Controller
         return 'P' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
+    // Auto-detect category from product name
+    private function detectCategory($namaPangan) {
+        $name = strtolower($namaPangan);
+        
+        if (str_contains($name, 'padi') || str_contains($name, 'beras') || str_contains($name, 'gabah')) {
+            return 'Padi';
+        } elseif (str_contains($name, 'jagung') || str_contains($name, 'corn')) {
+            return 'Jagung';
+        } elseif (str_contains($name, 'cabai') || str_contains($name, 'cabe') || str_contains($name, 'chili')) {
+            return 'Cabai';
+        }
+        
+        return 'Lainnya';
+    }
+
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'Nama_Pangan' => 'required|string|max:255',
             'Deskripsi_Pangan' => 'required|string|max:255',
             'Harga_Pangan' => 'required|numeric',
             'idFoto_Pangan' => 'required|string|max:255',
+            'category' => 'nullable|in:Padi,Jagung,Cabai,Lainnya',
         ]);
     
         if ($validator->fails()) {
@@ -50,12 +66,16 @@ class PanganController extends Controller
         }
 
         try {
+            // Auto-detect category if not provided
+            $category = $request->category ?? $this->detectCategory($request->Nama_Pangan);
+            
             $pangan = Pangan::create([
                 'idPangan' => $this->generatePanganId(),
                 'Nama_Pangan' => $request->Nama_Pangan,
                 'Deskripsi_Pangan' => $request->Deskripsi_Pangan,
                 'Harga_Pangan' => $request->Harga_Pangan,
                 'idFoto_Pangan' => $request->idFoto_Pangan,
+                'category' => $category,
             ]);
 
         return response()->json([
@@ -78,6 +98,7 @@ class PanganController extends Controller
             'Deskripsi_Pangan' => 'string|max:255', 
             'Harga_Pangan' => 'numeric',
             'idFoto_Pangan' => 'string|max:255',
+            'category' => 'nullable|in:Padi,Jagung,Cabai,Lainnya',
         ]);
 
         if ($validator->fails()) {
@@ -91,13 +112,21 @@ class PanganController extends Controller
         try {
             $pangan = Pangan::findOrFail($idPangan);
             
-            // Update only provided fields, idPangan stays the same
-            $pangan->update($request->only([
+            // Auto-detect category if name is being updated and category is not provided
+            $updateData = $request->only([
                 'Nama_Pangan', 
                 'Deskripsi_Pangan', 
                 'Harga_Pangan', 
-                'idFoto_Pangan'
-            ]));
+                'idFoto_Pangan',
+                'category'
+            ]);
+            
+            if (isset($updateData['Nama_Pangan']) && !isset($updateData['category'])) {
+                $updateData['category'] = $this->detectCategory($updateData['Nama_Pangan']);
+            }
+            
+            // Update only provided fields, idPangan stays the same
+            $pangan->update($updateData);
 
             return response()->json([
                 'success' => true,

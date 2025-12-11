@@ -31,22 +31,21 @@ class ChatListViewModel extends ChangeNotifier {
     _loadChatList();
   }
 
-  void _loadChatList() {
+  Future<void> _loadChatList() async {
     _isLoading = true;
     notifyListeners();
 
-    // Dummy data - list orang yang di chat (hanya BUMDes)
-    _chatList = [
-      ChatContact(
-        id: 'bumdes_001',
-        name: 'BUMDes Makmur Jaya',
-        lastMessage: 'Baik, saya akan kirim detailnya segera',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        avatar: 'B',
-        unreadCount: 2,
-        isOnline: true,
-      ),
-    ];
+    try {
+      // TODO: Fetch chat list from backend API
+      // await _chatRepository.getChatList();
+      await Future.delayed(const Duration(milliseconds: 500));
+      _chatList = [];
+      
+      debugPrint('💬 Chat list loaded: ${_chatList.length} contacts');
+    } catch (e) {
+      debugPrint('❌ Error loading chat list: $e');
+      _chatList = [];
+    }
 
     _isLoading = false;
     notifyListeners();

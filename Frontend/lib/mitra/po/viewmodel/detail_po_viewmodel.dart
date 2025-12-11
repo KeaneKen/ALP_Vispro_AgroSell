@@ -12,22 +12,17 @@ class DetailPOViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Simulate fetching from API
-    _poDetail = PreOrderModel(
-      id: poId,
-      supplierName: 'Supplier A',
-      orderDate: DateTime(2024, 1, 15),
-      deliveryDate: DateTime(2024, 1, 25),
-      totalAmount: 5000000,
-      status: 'approved',
-      items: [
-        POItem(productName: 'Product A', quantity: 100, price: 20000, unit: 'pcs'),
-        POItem(productName: 'Product B', quantity: 50, price: 60000, unit: 'pcs'),
-        POItem(productName: 'Product C', quantity: 75, price: 35000, unit: 'pcs'),
-      ],
-    );
+    try {
+      // TODO: Fetch PO detail from backend API
+      // _poDetail = await _preOrderRepository.getPreOrderById(poId);
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      _poDetail = null; // Will be populated from backend
+      debugPrint('📦 PO detail loaded: $poId');
+    } catch (e) {
+      debugPrint('❌ Error loading PO detail: $e');
+      _poDetail = null;
+    }
 
     _isLoading = false;
     notifyListeners();
@@ -35,19 +30,29 @@ class DetailPOViewModel extends ChangeNotifier {
 
   Future<bool> approvePO(String poId) async {
     if (_poDetail != null) {
-      await Future.delayed(const Duration(seconds: 1));
-      // Update status
-      _poDetail = PreOrderModel(
-        id: _poDetail!.id,
-        supplierName: _poDetail!.supplierName,
-        orderDate: _poDetail!.orderDate,
-        deliveryDate: _poDetail!.deliveryDate,
-        totalAmount: _poDetail!.totalAmount,
-        status: 'approved',
-        items: _poDetail!.items,
-      );
-      notifyListeners();
-      return true;
+      try {
+        // TODO: Approve PO via backend API
+        // await _preOrderRepository.updatePreOrderStatus(poId, 'approved');
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Update local status
+        _poDetail = PreOrderModel(
+          id: _poDetail!.id,
+          supplierName: _poDetail!.supplierName,
+          orderDate: _poDetail!.orderDate,
+          deliveryDate: _poDetail!.deliveryDate,
+          totalAmount: _poDetail!.totalAmount,
+          status: 'approved',
+          items: _poDetail!.items,
+        );
+        
+        debugPrint('✅ PO approved: $poId');
+        notifyListeners();
+        return true;
+      } catch (e) {
+        debugPrint('❌ Error approving PO: $e');
+        return false;
+      }
     }
     return false;
   }

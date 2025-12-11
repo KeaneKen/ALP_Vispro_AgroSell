@@ -19,11 +19,11 @@ class BumdesModel {
 
   factory BumdesModel.fromJson(Map<String, dynamic> json) {
     return BumdesModel(
-      idBumdes: json['idBumdes'] ?? '',
-      namaBumdes: json['Nama_Bumdes'] ?? '',
-      noTelpBumdes: json['NoTelp_Bumdes'] ?? '',
-      emailBumdes: json['Email_Bumdes'] ?? '',
-      passwordBumdes: json['Password_Bumdes'] ?? '',
+      idBumdes: json['idBumDES'] ?? json['idBumdes'] ?? '',
+      namaBumdes: json['Nama_BumDES'] ?? json['Nama_Bumdes'] ?? '',
+      noTelpBumdes: json['NoTelp_BumDES'] ?? json['NoTelp_Bumdes'] ?? '',
+      emailBumdes: json['Email_BumDES'] ?? json['Email_Bumdes'] ?? '',
+      passwordBumdes: json['Password_BumDES'] ?? json['Password_Bumdes'] ?? '',
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at']) 
           : null,
@@ -35,11 +35,11 @@ class BumdesModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'idBumdes': idBumdes,
-      'Nama_Bumdes': namaBumdes,
-      'NoTelp_Bumdes': noTelpBumdes,
-      'Email_Bumdes': emailBumdes,
-      'Password_Bumdes': passwordBumdes,
+      'idBumDES': idBumdes,
+      'Nama_BumDES': namaBumdes,
+      'NoTelp_BumDES': noTelpBumdes,
+      'Email_BumDES': emailBumdes,
+      'Password_BumDES': passwordBumdes,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -47,10 +47,10 @@ class BumdesModel {
 
   Map<String, dynamic> toCreateJson() {
     return {
-      'Nama_Bumdes': namaBumdes,
-      'NoTelp_Bumdes': noTelpBumdes,
-      'Email_Bumdes': emailBumdes,
-      'Password_Bumdes': passwordBumdes,
+      'Nama_BumDES': namaBumdes,
+      'NoTelp_BumDES': noTelpBumdes,
+      'Email_BumDES': emailBumdes,
+      'Password_BumDES': passwordBumdes,
     };
   }
 }

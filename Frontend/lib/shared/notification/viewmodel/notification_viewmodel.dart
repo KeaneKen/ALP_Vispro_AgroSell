@@ -41,77 +41,25 @@ class NotificationViewModel extends ChangeNotifier {
     _loadNotifications();
   }
 
-  void _loadNotifications() {
+  Future<void> _loadNotifications() async {
     _isLoading = true;
     notifyListeners();
 
-    // Dummy notifications dengan berbagai tipe
-    _notifications = [
-      NotificationItem(
-        id: '1',
-        title: 'Pesanan Berhasil',
-        message: 'Pesanan Padi IR64 Anda telah dikonfirmasi oleh BUMDes',
-        timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
-        type: NotificationType.order,
-        isRead: false,
-        actionData: {'route': 'cart'},
-      ),
-
-      NotificationItem(
-        id: '2',
-        title: 'Produk Best Seller!',
-        message: 'Padi Varietas IR64 menjadi produk terlaris minggu ini',
-        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-        type: NotificationType.promo,
-        isRead: false,
-        actionData: {
-          'route': 'product_detail',
-          'product': {
-            'name': 'Padi Varietas IR64',
-            'category': 'Padi',
-            'price': 'Rp 11.500/kg',
-            'stock': 'Stok: 800kg',
-            'rating': '4.9',
-            'image': 'assets/images/padi 2.jpg',
-            'isPreOrder': 'true',
-          },
-        },
-      ),
-      NotificationItem(
-        id: '3',
-        title: 'Pesan Baru dari BUMDes',
-        message: 'BUMDes Makmur Jaya: Baik, saya akan kirim detailnya segera',
-        timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-        type: NotificationType.chat,
-        isRead: false,
-        actionData: {
-          'route': 'chat',
-          'contactName': 'BUMDes Makmur Jaya',
-          'contactId': 'bumdes_001',
-        },
-      ),
-      NotificationItem(
-        id: '4',
-        title: 'Pembayaran Berhasil',
-        message: 'Pembayaran pesanan sebesar Rp 250.000 telah diterima',
-        timestamp: DateTime.now().subtract(const Duration(days: 1)),
-        type: NotificationType.payment,
-        isRead: true,
-        actionData: {'route': 'cart'},
-      ),
-      NotificationItem(
-        id: '5',
-        title: 'Update Sistem',
-        message: 'Aplikasi telah diperbarui dengan fitur chat dan notifikasi',
-        timestamp: DateTime.now().subtract(const Duration(days: 2)),
-        type: NotificationType.system,
-        isRead: true,
-      ),
-    ];
-
+    try {
+      // TODO: Fetch notifications from backend API
+      // For now, empty list until backend endpoint is ready
+      await Future.delayed(const Duration(milliseconds: 500));
+      _notifications = [];
+    } catch (e) {
+      debugPrint('❌ Error loading notifications: $e');
+      _notifications = [];
+    }
+    
     _isLoading = false;
     notifyListeners();
   }
+
+
 
   void markAsRead(String id) {
     final index = _notifications.indexWhere((n) => n.id == id);

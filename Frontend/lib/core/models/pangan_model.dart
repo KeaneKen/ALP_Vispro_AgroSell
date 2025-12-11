@@ -4,6 +4,7 @@ class PanganModel {
   final String deskripsiPangan;
   final double hargaPangan;
   final String idFotoPangan;
+  final String category;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -13,6 +14,7 @@ class PanganModel {
     required this.deskripsiPangan,
     required this.hargaPangan,
     required this.idFotoPangan,
+    this.category = 'Lainnya',
     this.createdAt,
     this.updatedAt,
   });
@@ -25,6 +27,7 @@ class PanganModel {
       deskripsiPangan: json['Deskripsi_Pangan'] ?? '',
       hargaPangan: double.tryParse(json['Harga_Pangan'].toString()) ?? 0.0,
       idFotoPangan: json['idFoto_Pangan'] ?? '',
+      category: json['category'] ?? 'Lainnya',
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at']) 
           : null,
@@ -42,6 +45,7 @@ class PanganModel {
       'Deskripsi_Pangan': deskripsiPangan,
       'Harga_Pangan': hargaPangan,
       'idFoto_Pangan': idFotoPangan,
+      'category': category,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -54,6 +58,7 @@ class PanganModel {
       'Deskripsi_Pangan': deskripsiPangan,
       'Harga_Pangan': hargaPangan,
       'idFoto_Pangan': idFotoPangan,
+      'category': category,
     };
   }
 }
