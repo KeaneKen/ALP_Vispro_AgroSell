@@ -4,12 +4,16 @@ import '../../../core/theme/app_colors.dart';
 
 class ChatView extends StatefulWidget {
   final String contactName;
-  final String contactId;
+  final String mitraId;
+  final String bumdesId;
+  final String currentUserType; // 'mitra' or 'bumdes'
 
   const ChatView({
     Key? key,
     required this.contactName,
-    required this.contactId,
+    required this.mitraId,
+    required this.bumdesId,
+    required this.currentUserType,
   }) : super(key: key);
 
   @override
@@ -23,7 +27,11 @@ class _ChatViewState extends State<ChatView> {
   @override
   void initState() {
     super.initState();
-    _viewModel = ChatViewModel(widget.contactId);
+    _viewModel = ChatViewModel(
+      mitraId: widget.mitraId,
+      bumdesId: widget.bumdesId,
+      currentUserType: widget.currentUserType,
+    );
     
     // Auto scroll to bottom when messages load
     WidgetsBinding.instance.addPostFrameCallback((_) {

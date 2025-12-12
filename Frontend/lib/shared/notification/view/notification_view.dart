@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../viewmodel/notification_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/auth_service.dart';
 import '../../cart/cart_route.dart';
 import '../../chat/chat_route.dart';
 import '../../product_detail/product_detail_route.dart';
@@ -15,6 +16,7 @@ class NotificationView extends StatefulWidget {
 
 class _NotificationViewState extends State<NotificationView> {
   late NotificationViewModel _viewModel;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -28,7 +30,7 @@ class _NotificationViewState extends State<NotificationView> {
     super.dispose();
   }
 
-  void _handleNotificationTap(NotificationItem notification) {
+  Future<void> _handleNotificationTap(NotificationItem notification) async {
     // Mark as read
     _viewModel.markAsRead(notification.id);
 
@@ -38,9 +40,24 @@ class _NotificationViewState extends State<NotificationView> {
 
       switch (route) {
         case 'chat':
+          final userId = await _authService.getUserId();
+          final userType = await _authService.getUserType();
+          
           final contactName = notification.actionData!['contactName'] as String;
-          final contactId = notification.actionData!['contactId'] as String;
-          ChatRoute.navigate(context, contactName, contactId);
+          final notifMitraId = notification.actionData!['mitraId'] as String?;
+          final notifBumdesId = notification.actionData!['bumdesId'] as String?;
+          
+          // Use logged-in user's ID for their role, notification data for the other party (default to mitra for testing)
+          final mitraId = userType == 'mitra' ? (userId ?? 'M001') : (notifMitraId ?? 'M001');
+          final bumdesId = userType == 'bumdes' ? (userId ?? 'B001') : (notifBumdesId ?? 'B001');
+          
+          ChatRoute.navigate(
+            context,
+            contactName: contactName,
+            mitraId: mitraId,
+            bumdesId: bumdesId,
+            currentUserType: userType ?? 'mitra',
+          );
           break;
 
         case 'product_detail':

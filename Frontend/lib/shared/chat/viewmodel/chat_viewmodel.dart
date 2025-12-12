@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/chat_repository.dart';
+import '../../../core/models/chat_model.dart';
+import '../../../core/services/mitra_repository.dart';
+import '../../../core/services/bumdes_repository.dart';
+import '../../../core/models/mitra_model.dart';
+import '../../../core/models/bumdes_model.dart';
+import 'dart:async';
 
 class ChatMessage {
   final String id;
@@ -17,129 +24,150 @@ class ChatMessage {
 }
 
 class ChatViewModel extends ChangeNotifier {
+  final ChatRepository _chatRepository = ChatRepository();
+  final MitraRepository _mitraRepository = MitraRepository();
+  final BumdesRepository _bumdesRepository = BumdesRepository();
+  
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
+  String? _error;
   final TextEditingController messageController = TextEditingController();
+  
+  // User information
+  final String _mitraId;
+  final String _bumdesId;
+  final String _currentUserType; // 'mitra' or 'bumdes'
+  
+  // Cached user data
+  MitraModel? _mitraData;
+  BumdesModel? _bumdesData;
+  
+  // Auto-refresh timer
+  Timer? _refreshTimer;
 
   List<ChatMessage> get messages => _messages;
   bool get isLoading => _isLoading;
+  String? get error => _error;
+  MitraModel? get mitraData => _mitraData;
+  BumdesModel? get bumdesData => _bumdesData;
 
-  ChatViewModel(String contactId) {
-    _loadMessages(contactId);
+  ChatViewModel({
+    required String mitraId,
+    required String bumdesId,
+    required String currentUserType,
+  })  : _mitraId = mitraId,
+        _bumdesId = bumdesId,
+        _currentUserType = currentUserType {
+    _loadMessages();
+    _loadUserData();
+    _startAutoRefresh();
   }
 
-  void _loadMessages(String contactId) {
-    _isLoading = true;
-    notifyListeners();
+  Future<void> _loadUserData() async {
+    try {
+      // Load mitra data if ID is provided
+      if (_mitraId.isNotEmpty) {
+        _mitraData = await _mitraRepository.getMitraById(_mitraId);
+        debugPrint('✅ Loaded mitra data: ${_mitraData?.namaMitra}');
+      }
+      
+      // Load bumdes data if ID is provided
+      if (_bumdesId.isNotEmpty) {
+        _bumdesData = await _bumdesRepository.getBumdesById(_bumdesId);
+        debugPrint('✅ Loaded bumdes data: ${_bumdesData?.namaBumdes}');
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('⚠️ Error loading user data: $e');
+      // Don't fail the chat if user data loading fails
+    }
+  }
 
-    // Dummy messages based on contact
-    _messages = [
-      ChatMessage(
-        id: '1',
-        text: 'Halo, saya ingin menanyakan tentang padi IR64',
-        isSentByMe: true,
-        timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-        isRead: true,
-      ),
-      ChatMessage(
-        id: '2',
-        text: 'Halo! Tentu, ada yang bisa saya bantu?',
-        isSentByMe: false,
-        timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: -5)),
-        isRead: true,
-      ),
-      ChatMessage(
-        id: '3',
-        text: 'Stok untuk padi IR64 saat ini berapa ya?',
-        isSentByMe: true,
-        timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 50)),
-        isRead: true,
-      ),
-      ChatMessage(
-        id: '4',
-        text: 'Stok tersedia 800kg. Harga Rp 11.500/kg sesuai HPP',
-        isSentByMe: false,
-        timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 45)),
-        isRead: true,
-      ),
-      ChatMessage(
-        id: '5',
-        text: 'Apakah bisa pre-order untuk panen minggu depan?',
-        isSentByMe: true,
-        timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
-        isRead: true,
-      ),
-      ChatMessage(
-        id: '6',
-        text: 'Bisa pak, minimal order 100kg untuk pre-order',
-        isSentByMe: false,
-        timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 25)),
-        isRead: true,
-      ),
-      ChatMessage(
-        id: '7',
-        text: 'Baik, saya akan order 200kg. Bagaimana cara pembayarannya?',
-        isSentByMe: true,
-        timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 20)),
-        isRead: true,
-      ),
-      ChatMessage(
-        id: '8',
-        text: 'Pembayaran bisa transfer atau COD. Saya akan kirim detailnya segera',
-        isSentByMe: false,
-        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-        isRead: false,
-      ),
-    ];
+  void _startAutoRefresh() {
+    // Refresh messages every 3 seconds
+    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      _loadMessages(silent: true);
+    });
+  }
+
+  Future<void> _loadMessages({bool silent = false}) async {
+    if (!silent) {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+    }
+
+    try {
+      final chatModels = await _chatRepository.getConversation(_mitraId, _bumdesId);
+      
+      _messages = chatModels.map((chat) {
+        return ChatMessage(
+          id: chat.idChat,
+          text: chat.message,
+          isSentByMe: chat.senderType == _currentUserType,
+          timestamp: chat.sentAt,
+          isRead: chat.isRead,
+        );
+      }).toList();
+
+      debugPrint('✅ Loaded ${_messages.length} messages');
+    } catch (e) {
+      _error = e.toString();
+      debugPrint('❌ Error loading messages: $e');
+      _messages = [];
+    }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  void sendMessage() {
+  Future<void> sendMessage() async {
     if (messageController.text.trim().isEmpty) return;
 
-    final newMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      text: messageController.text.trim(),
-      isSentByMe: true,
-      timestamp: DateTime.now(),
-      isRead: false,
-    );
-
-    _messages.add(newMessage);
+    final messageText = messageController.text.trim();
     messageController.clear();
-    notifyListeners();
 
-    // Simulate reply after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
-      _simulateReply();
-    });
+    try {
+      // Create ChatModel
+      final chatModel = ChatModel(
+        idChat: '', // Will be generated by backend
+        idMitra: _mitraId,
+        idBumDes: _bumdesId,
+        message: messageText,
+        senderType: _currentUserType,
+        status: 'sent',
+        sentAt: DateTime.now(),
+      );
+
+      // Send to backend
+      final sentMessage = await _chatRepository.sendMessage(chatModel);
+
+      // Add to local list
+      _messages.add(ChatMessage(
+        id: sentMessage.idChat,
+        text: sentMessage.message,
+        isSentByMe: true,
+        timestamp: sentMessage.sentAt,
+        isRead: false,
+      ));
+
+      notifyListeners();
+      debugPrint('✅ Message sent successfully');
+    } catch (e) {
+      debugPrint('❌ Error sending message: $e');
+      _error = 'Failed to send message';
+      notifyListeners();
+    }
   }
 
-  void _simulateReply() {
-    final replies = [
-      'Baik, terima kasih!',
-      'Siap, akan saya proses',
-      'Oke, noted',
-      'Terima kasih atas pesanannya',
-      'Baik, saya akan cek dulu',
-    ];
-
-    final reply = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      text: replies[_messages.length % replies.length],
-      isSentByMe: false,
-      timestamp: DateTime.now(),
-      isRead: false,
-    );
-
-    _messages.add(reply);
-    notifyListeners();
+  Future<void> refreshMessages() async {
+    await _loadMessages();
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     messageController.dispose();
     super.dispose();
   }

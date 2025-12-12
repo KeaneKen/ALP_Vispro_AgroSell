@@ -21,11 +21,11 @@ class BumdesController extends Controller
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'idBumdes' => 'required|string|unique:bumdes,idBumdes',
+            'idBumdes' => 'required|string|unique:bumdes,idBumDES',
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:bumdes,email',
+            'email' => 'required|string|email|max:255|unique:bumdes,Email_BumDES',
+            'password' => 'required|string|min:8',
             'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:500',
         ]);
     
         if ($validator->fails()) {
@@ -38,12 +38,11 @@ class BumdesController extends Controller
 
         try {
             $bumdes = Bumdes::create([
-                'idBumdes' => $request->idBumdes,
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'phone' => $request->phone,
-                'address' => $request->address,
+                'idBumDES' => $request->idBumdes,
+                'Nama_BumDES' => $request->name,
+                'Email_BumDES' => $request->email,
+                'Password_BumDES' => Hash::make($request->password),
+                'NoTelp_BumDES' => $request->phone,
             ]);
 
         return response()->json([
@@ -60,5 +59,21 @@ class BumdesController extends Controller
         }
     }
 
+    // Show bumdes details
+    public function show($idBumdes) {
+        try {
+            $bumdes = Bumdes::findOrFail($idBumdes);
+            return response()->json([
+                'success' => true,
+                'message' => 'Bumdes retrieved successfully',
+                'data' => $bumdes
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bumdes not found'
+            ], 404);
+        }
+    }
 
 }

@@ -11,7 +11,7 @@ class MitraRepository {
       final response = await _apiService.get(ApiConfig.mitras);
       
       if (response is List) {
-        return response.map((json) => MitraModel.fromJson(json)).toList();
+        return response.map((json) => MitraModel.fromJson(Map<String, dynamic>.from(json))).toList();
       }
       
       throw Exception('Invalid response format');
@@ -24,7 +24,16 @@ class MitraRepository {
   Future<MitraModel> getMitraById(String id) async {
     try {
       final response = await _apiService.get('${ApiConfig.mitras}/$id');
-      return MitraModel.fromJson(response);
+      
+      // Handle response format with success wrapper
+      if (response is Map && response['success'] == true && response['data'] != null) {
+        return MitraModel.fromJson(Map<String, dynamic>.from(response['data']));
+      } else if (response is Map && response['idMitra'] != null) {
+        // Direct mitra object
+        return MitraModel.fromJson(Map<String, dynamic>.from(response));
+      }
+      
+      throw Exception('Invalid response format');
     } catch (e) {
       throw Exception('Failed to fetch mitra: $e');
     }
@@ -39,7 +48,7 @@ class MitraRepository {
       );
       
       if (response['success'] == true && response['data'] != null) {
-        return MitraModel.fromJson(response['data']);
+        return MitraModel.fromJson(Map<String, dynamic>.from(response['data']));
       }
       
       throw Exception(response['message'] ?? 'Failed to create mitra');
@@ -57,7 +66,7 @@ class MitraRepository {
       );
       
       if (response['success'] == true && response['data'] != null) {
-        return MitraModel.fromJson(response['data']);
+        return MitraModel.fromJson(Map<String, dynamic>.from(response['data']));
       }
       
       throw Exception(response['message'] ?? 'Failed to update mitra');

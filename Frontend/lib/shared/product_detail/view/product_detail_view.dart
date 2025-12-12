@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../viewmodel/product_detail_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/auth_service.dart';
+import '../../../core/services/bumdes_repository.dart';
 import '../../cart/cart_route.dart';
 import '../../chat/chat_route.dart';
 
@@ -18,6 +20,8 @@ class ProductDetailView extends StatefulWidget {
 
 class _ProductDetailViewState extends State<ProductDetailView> {
   final ProductDetailViewModel _viewModel = ProductDetailViewModel();
+  final AuthService _authService = AuthService();
+  final BumdesRepository _bumdesRepository = BumdesRepository();
 
   @override
   void initState() {
@@ -314,8 +318,31 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                 children: [
                   // Chat Button
                   OutlinedButton.icon(
-                    onPressed: () {
-                      ChatRoute.navigate(context, 'BUMDes Makmur Jaya', 'bumdes_001');
+                    onPressed: () async {
+                      final userId = await _authService.getUserId();
+                      final userType = await _authService.getUserType();
+                      
+                      // Get product's bumdes ID (assuming it's stored in product data)
+                      final bumdesId = _viewModel.product!['idBumdes'] ?? 'B001';
+                      
+                      // Fetch actual BumDes name from database
+                      String bumdesName = 'BUMDes';
+                      try {
+                        final bumdes = await _bumdesRepository.getBumdesById(bumdesId);
+                        bumdesName = bumdes.namaBumdes;
+                      } catch (e) {
+                        debugPrint('Failed to fetch BumDes name: $e');
+                        bumdesName = 'BUMDes';
+                      }
+                      
+                      // Use logged-in user if available, otherwise default to mitra testing mode
+                      ChatRoute.navigate(
+                        context,
+                        contactName: bumdesName,
+                        mitraId: userType == 'mitra' ? (userId ?? 'M001') : 'M001',
+                        bumdesId: userType == 'bumdes' ? (userId ?? 'B001') : bumdesId,
+                        currentUserType: userType ?? 'mitra',
+                      );
                     },
                     icon: const Icon(Icons.chat_bubble_outline),
                     label: const Text('Chat'),

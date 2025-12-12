@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../viewmodel/login_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../main.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -22,7 +23,9 @@ class _LoginViewState extends State<LoginView> {
 
   void _onViewModelChange() {
     if (_viewModel.isLoggedIn) {
-      // Navigator.pushReplacementNamed(context, '/home');
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
     }
 
     if (_viewModel.errorMessage != null) {
@@ -38,6 +41,28 @@ class _LoginViewState extends State<LoginView> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Widget _buildLoginTypeButton(String label, String type) {
+    final isSelected = _viewModel.loginAs == type;
+    return GestureDetector(
+      onTap: () => _viewModel.setLoginAs(type),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : AppColors.textPrimary,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -91,11 +116,42 @@ class _LoginViewState extends State<LoginView> {
 
                 const SizedBox(height: 8),
 
-                Text(
-                  'Masuk menggunakan akun yang telah terdaftar',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 12,
+                AnimatedBuilder(
+                  animation: _viewModel,
+                  builder: (context, child) {
+                    return Text(
+                      'Masuk sebagai ${_viewModel.loginAs == 'mitra' ? 'Mitra' : 'BUMDes'}',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 12,
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                /// LOGIN AS TOGGLE
+                Center(
+                  child: AnimatedBuilder(
+                    animation: _viewModel,
+                    builder: (context, child) {
+                      return Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildLoginTypeButton('Mitra', 'mitra'),
+                            const SizedBox(width: 8),
+                            _buildLoginTypeButton('BUMDes', 'bumdes'),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
 

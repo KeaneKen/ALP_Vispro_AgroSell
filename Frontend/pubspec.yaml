@@ -46,6 +46,9 @@ dependencies:
   
   # Provider for state management
   provider: ^6.1.2
+  
+  # Local storage for user session
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

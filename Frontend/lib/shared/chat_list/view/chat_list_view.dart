@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../viewmodel/chat_list_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/auth_service.dart';
 import '../../chat/chat_route.dart';
 import 'package:intl/intl.dart';
 
@@ -13,6 +14,7 @@ class ChatListView extends StatefulWidget {
 
 class _ChatListViewState extends State<ChatListView> {
   late ChatListViewModel _viewModel;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -130,8 +132,35 @@ class _ChatListViewState extends State<ChatListView> {
         );
       },
       child: InkWell(
-        onTap: () {
-          ChatRoute.navigate(context, chat.name, chat.id);
+        onTap: () async {
+          final userId = await _authService.getUserId();
+          final userType = await _authService.getUserType();
+          
+          // Determine participant IDs based on user type and contact type
+          String mitraId;
+          String bumdesId;
+          
+          if (userType == 'mitra') {
+            // Current user is mitra, contact is bumdes
+            mitraId = userId ?? '';
+            bumdesId = chat.id;
+          } else if (userType == 'bumdes') {
+            // Current user is bumdes, contact is mitra
+            mitraId = chat.id;
+            bumdesId = userId ?? '';
+          } else {
+            // Fallback (shouldn't happen with proper auth)
+            mitraId = chat.userType == 'mitra' ? chat.id : (userId ?? '');
+            bumdesId = chat.userType == 'bumdes' ? chat.id : (userId ?? '');
+          }
+          
+          ChatRoute.navigate(
+            context,
+            contactName: chat.name,
+            mitraId: mitraId,
+            bumdesId: bumdesId,
+            currentUserType: userType ?? 'mitra',
+          );
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

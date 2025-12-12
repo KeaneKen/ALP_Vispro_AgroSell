@@ -10,7 +10,7 @@ class MitraModel {
   MitraModel({
     required this.idMitra,
     required this.namaMitra,
-    required this.noTelpMitra,
+    this.noTelpMitra = '',
     required this.emailMitra,
     required this.passwordMitra,
     this.createdAt,

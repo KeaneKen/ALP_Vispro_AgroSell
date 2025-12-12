@@ -94,7 +94,7 @@ class AuthViewModelExample extends ChangeNotifier {
   /// Register new Mitra
   Future<bool> registerMitra({
     required String name,
-    required String phone,
+    String phone = '',
     required String email,
     required String password,
   }) async {
@@ -129,7 +129,7 @@ class AuthViewModelExample extends ChangeNotifier {
   /// Register new Bumdes
   Future<bool> registerBumdes({
     required String name,
-    required String phone,
+    String phone = '',
     required String email,
     required String password,
   }) async {

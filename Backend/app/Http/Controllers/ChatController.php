@@ -53,8 +53,18 @@ class ChatController extends Controller
         ], 201);
     }
 
-    public function conversation(string $mitraId, string $bumdesId)
+    public function conversation(Request $request)
     {
+        $mitraId = $request->query('idMitra');
+        $bumdesId = $request->query('idBumDes');
+
+        if (!$mitraId || !$bumdesId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'idMitra and idBumDes are required',
+            ], 400);
+        }
+
         if (! Mitra::whereKey($mitraId)->exists() || ! Bumdes::whereKey($bumdesId)->exists()) {
             return response()->json([
                 'success' => false,

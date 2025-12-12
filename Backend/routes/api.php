@@ -26,7 +26,7 @@ Route::apiResource('payment', PaymentController::class);
 
 Route::apiResource('riwayat', RiwayatController::class);
 
-Route::get('chat/conversation', [ChatController::class, 'betweenParticipants']);
+Route::get('chat/conversation', [ChatController::class, 'conversation']);
 
 Route::post('chat/{chat}/mark-read', [ChatController::class, 'markAsRead']);
 

@@ -12,7 +12,7 @@ class BumdesRepository {
       final response = await _apiService.get(ApiConfig.bumdes);
       
       if (response is List) {
-        return response.map((json) => BumdesModel.fromJson(json)).toList();
+        return response.map((json) => BumdesModel.fromJson(Map<String, dynamic>.from(json))).toList();
       }
       
       throw Exception('Invalid response format');
@@ -25,7 +25,16 @@ class BumdesRepository {
   Future<BumdesModel> getBumdesById(String id) async {
     try {
       final response = await _apiService.get('${ApiConfig.bumdes}/$id');
-      return BumdesModel.fromJson(response);
+      
+      // Handle response format with success wrapper
+      if (response is Map && response['success'] == true && response['data'] != null) {
+        return BumdesModel.fromJson(Map<String, dynamic>.from(response['data']));
+      } else if (response is Map && response['idBumDES'] != null) {
+        // Direct bumdes object
+        return BumdesModel.fromJson(Map<String, dynamic>.from(response));
+      }
+      
+      throw Exception('Invalid response format');
     } catch (e) {
       throw Exception('Failed to fetch bumdes: $e');
     }
@@ -40,7 +49,7 @@ class BumdesRepository {
       );
       
       if (response['success'] == true && response['data'] != null) {
-        return BumdesModel.fromJson(response['data']);
+        return BumdesModel.fromJson(Map<String, dynamic>.from(response['data']));
       }
       
       throw Exception(response['message'] ?? 'Failed to create bumdes');
@@ -58,7 +67,7 @@ class BumdesRepository {
       );
       
       if (response['success'] == true && response['data'] != null) {
-        return BumdesModel.fromJson(response['data']);
+        return BumdesModel.fromJson(Map<String, dynamic>.from(response['data']));
       }
       
       throw Exception(response['message'] ?? 'Failed to update bumdes');
@@ -113,9 +122,8 @@ class BumdesRepository {
       // Calculate total stock (sum of all pangan items)
       int totalStock = 0;
       if (panganResponse is List) {
-        for (var pangan in panganResponse) {
-          totalStock += 100; // Placeholder, adjust based on actual stock field
-        }
+        // Placeholder calculation - each item adds 100 to stock
+        totalStock = panganResponse.length * 100; // Adjust based on actual stock field
       }
 
       // Calculate monthly income from payments

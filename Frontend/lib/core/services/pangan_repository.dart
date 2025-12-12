@@ -11,7 +11,7 @@ class PanganRepository {
       final response = await _apiService.get(ApiConfig.pangans);
       
       if (response is List) {
-        return response.map((json) => PanganModel.fromJson(json)).toList();
+        return response.map((json) => PanganModel.fromJson(Map<String, dynamic>.from(json))).toList();
       }
       
       throw Exception('Invalid response format');
