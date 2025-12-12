@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/bumdes_repository.dart';
 import '../../../core/services/pangan_repository.dart';
+import '../../../core/services/auth_service.dart';
 import 'package:intl/intl.dart';
 
 class BumdesProfileViewModel with ChangeNotifier {
   final BumdesRepository _bumdesRepository = BumdesRepository();
   final PanganRepository _panganRepository = PanganRepository();
+  final AuthService _authService = AuthService();
   
   bool _isLoading = true;
+  String _bumdesName = 'Loading...';
+  String _bumdesEmail = '';
+  String _bumdesPhone = '';
   int _preOrderCount = 0;
   int _buyNowCount = 0;
   int _pendingDeliveryCount = 0;
@@ -21,6 +26,9 @@ class BumdesProfileViewModel with ChangeNotifier {
   List<Map<String, dynamic>> _recentActivities = [];
 
   bool get isLoading => _isLoading;
+  String get bumdesName => _bumdesName;
+  String get bumdesEmail => _bumdesEmail;
+  String get bumdesPhone => _bumdesPhone;
   int get preOrderCount => _preOrderCount;
   int get buyNowCount => _buyNowCount;
   int get pendingDeliveryCount => _pendingDeliveryCount;
@@ -42,6 +50,21 @@ class BumdesProfileViewModel with ChangeNotifier {
 
     try {
       debugPrint('🔄 Loading profile data from database...');
+      
+      // Get current bumdes ID from auth service
+      final bumdesId = await _authService.getBumdesId();
+      
+      if (bumdesId == null) {
+        throw Exception('User not logged in');
+      }
+
+      // Fetch bumdes data from backend
+      final bumdes = await _bumdesRepository.getBumdesById(bumdesId);
+      
+      // Update profile data
+      _bumdesName = bumdes.namaBumdes;
+      _bumdesEmail = bumdes.emailBumdes;
+      _bumdesPhone = bumdes.noTelpBumdes ?? '';
       
       // Fetch statistics from backend
       final stats = await _bumdesRepository.getProfileStats();
@@ -83,10 +106,15 @@ class BumdesProfileViewModel with ChangeNotifier {
       // Initialize recent activities with sample data
       _initializeDummyActivities();
 
-      debugPrint('✅ Profile data loaded: PreOrders=$_preOrderCount, Stock=$_totalStock, Income=$_monthlyIncome');
+      debugPrint('✅ Profile data loaded: Name=$_bumdesName, PreOrders=$_preOrderCount, Stock=$_totalStock, Income=$_monthlyIncome');
     } catch (e) {
       _error = e.toString();
       debugPrint('❌ Error loading profile data: $e');
+      
+      // Set default values on error
+      _bumdesName = 'Failed to load';
+      _bumdesEmail = '';
+      _bumdesPhone = '';
       _initializeDummyActivities(); // Fallback to dummy data
     }
 

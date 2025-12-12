@@ -169,22 +169,27 @@ class _LoginViewState extends State<LoginView> {
                 const SizedBox(height: 20),
 
                 /// PASSWORD FIELD
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: !_viewModel.isPasswordVisible,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _viewModel.isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                AnimatedBuilder(
+                  animation: _viewModel,
+                  builder: (context, child) {
+                    return TextFormField(
+                      controller: _passwordController,
+                      obscureText: !_viewModel.isPasswordVisible,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        
+                        prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _viewModel.isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: _viewModel.togglePasswordVisibility,
+                        ),
                       ),
-                      onPressed: _viewModel.togglePasswordVisibility,
-                    ),
-                  ),
+                    );
+                  },
                 ),
 
                 /// LUPA PASSWORD
