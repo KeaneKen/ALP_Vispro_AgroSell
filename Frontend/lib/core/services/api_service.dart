@@ -47,6 +47,9 @@ class ApiService {
   Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
+      print('POST Request to: $uri');
+      print('Request body: ${body != null ? jsonEncode(body) : 'null'}');
+      
       final response = await http
           .post(
             uri,
@@ -55,8 +58,12 @@ class ApiService {
           )
           .timeout(ApiConfig.connectTimeout);
 
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
       return _handleResponse(response);
     } catch (e) {
+      print('POST Error: $e');
       throw _handleError(e);
     }
   }

@@ -15,6 +15,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::apiResource('mitra', MitraController::class);
+Route::post('mitra/login', [MitraController::class, 'login']);
 
 Route::apiResource('bumdes', BumdesController::class);
 

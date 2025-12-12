@@ -42,17 +42,24 @@ class MitraRepository {
   // Create new mitra (Register)
   Future<MitraModel> createMitra(MitraModel mitra) async {
     try {
+      print('MitraRepository: Creating mitra with data: ${mitra.toCreateJson()}');
+      
       final response = await _apiService.post(
         ApiConfig.mitras,
         body: mitra.toCreateJson(),
       );
       
+      print('MitraRepository: Response received: $response');
+      
       if (response['success'] == true && response['data'] != null) {
-        return MitraModel.fromJson(Map<String, dynamic>.from(response['data']));
+        final createdMitra = MitraModel.fromJson(Map<String, dynamic>.from(response['data']));
+        print('MitraRepository: Mitra created with ID: ${createdMitra.idMitra}');
+        return createdMitra;
       }
       
       throw Exception(response['message'] ?? 'Failed to create mitra');
     } catch (e) {
+      print('MitraRepository: Error creating mitra: $e');
       throw Exception('Failed to create mitra: $e');
     }
   }
@@ -87,16 +94,24 @@ class MitraRepository {
   // Login mitra
   Future<MitraModel?> loginMitra(String email, String password) async {
     try {
-      final allMitra = await getAllMitra();
+      final response = await _apiService.post(
+        '${ApiConfig.mitras}/login',
+        body: {
+          'Email_Mitra': email,
+          'Password_Mitra': password,
+        },
+      );
       
-      for (var mitra in allMitra) {
-        if (mitra.emailMitra == email && mitra.passwordMitra == password) {
-          return mitra;
-        }
+      if (response['success'] == true && response['data'] != null) {
+        return MitraModel.fromJson(Map<String, dynamic>.from(response['data']));
       }
       
       return null;
     } catch (e) {
+      // Check if it's an authentication error
+      if (e.toString().contains('401')) {
+        return null; // Invalid credentials
+      }
       throw Exception('Failed to login: $e');
     }
   }

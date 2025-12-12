@@ -7,7 +7,7 @@ class ApiConfig {
   
   // Alternative URLs for different platforms
   static const String baseUrlIOS = 'http://localhost:8000/api';
-  static const String baseUrlPhysicalDevice = 'http://192.168.1.19:8000/api'; // Updated with your IP
+  static const String baseUrlPhysicalDevice = 'http://192.168.40.212:8000/api'; // Updated with your IP
   
   // Timeouts
   static const Duration connectTimeout = Duration(seconds: 30);

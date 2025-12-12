@@ -119,7 +119,7 @@ class _RegisterViewState extends State<RegisterView> {
                 // Phone Number Field
                 TextField(
                   controller: _phoneNumberController,
-                  obscureText: !_viewModel.isPasswordVisible,
+                  keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
                     labelText: 'Nomor HP',
                     
@@ -174,6 +174,7 @@ class _RegisterViewState extends State<RegisterView> {
                               _usernameController.text,
                               _emailController.text,
                               _passwordController.text,
+                              _phoneNumberController.text,
                             ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,

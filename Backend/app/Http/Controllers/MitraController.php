@@ -90,4 +90,54 @@ class MitraController extends Controller
             ], 404);
         }
     }
+    
+    // Login mitra
+    public function login(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'Email_Mitra' => 'required|string|email',
+            'Password_Mitra' => 'required|string',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        try {
+            // Find mitra by email
+            $mitra = Mitra::where('Email_Mitra', $request->Email_Mitra)->first();
+            
+            if (!$mitra) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email tidak terdaftar'
+                ], 401);
+            }
+            
+            // Verify password with the hashed password in database
+            if (!Hash::check($request->Password_Mitra, $mitra->Password_Mitra)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password salah'
+                ], 401);
+            }
+            
+            // Login successful
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'data' => $mitra
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Login failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
