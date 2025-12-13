@@ -17,6 +17,7 @@ class Bumdes extends Model
         'Email_BumDES',
         'Password_BumDES',
         'NoTelp_BumDES',
+        'profile_picture',
     ];
 
     // Accessors to provide consistent API

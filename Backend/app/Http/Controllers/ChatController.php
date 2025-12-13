@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Bumdes;
 use App\Models\Chat;
 use App\Models\Mitra;
+use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -45,6 +46,9 @@ class ChatController extends Controller
         $data['sent_at'] = now();
 
         $chat = Chat::create($data);
+
+        // Broadcast the message event for real-time updates
+        broadcast(new MessageSent($chat))->toOthers();
 
         return response()->json([
             'success' => true,

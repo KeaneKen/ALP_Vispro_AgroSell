@@ -7,6 +7,7 @@ use App\Models\Bumdes;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class BumdesController extends Controller
 {
@@ -73,6 +74,54 @@ class BumdesController extends Controller
                 'success' => false,
                 'message' => 'Bumdes not found'
             ], 404);
+        }
+    }
+
+    // Upload profile picture
+    public function uploadProfilePicture(Request $request, $idBumdes) {
+        $validator = Validator::make($request->all(), [
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        try {
+            $bumdes = Bumdes::findOrFail($idBumdes);
+            
+            // Delete old profile picture if exists
+            if ($bumdes->profile_picture && Storage::exists('public/profile_pictures/' . $bumdes->profile_picture)) {
+                Storage::delete('public/profile_pictures/' . $bumdes->profile_picture);
+            }
+            
+            // Store new profile picture
+            $file = $request->file('profile_picture');
+            $filename = $idBumdes . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/profile_pictures', $filename);
+            
+            // Update database
+            $bumdes->profile_picture = $filename;
+            $bumdes->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture uploaded successfully',
+                'data' => [
+                    'profile_picture_url' => asset('storage/profile_pictures/' . $filename)
+                ]
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload profile picture',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

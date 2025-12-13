@@ -16,7 +16,6 @@ class PanganSeeder extends Seeder
         $products = [
             [
                 'idPangan' => 'P001',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Beras Premium',
                 'Deskripsi_Pangan' => 'Beras berkualitas tinggi dengan tekstur pulen',
                 'Harga_Pangan' => 12000,
@@ -25,7 +24,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P002',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Jagung Manis',
                 'Deskripsi_Pangan' => 'Jagung segar dan manis langsung dari petani',
                 'Harga_Pangan' => 8000,
@@ -34,7 +32,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P003',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Kedelai Organik',
                 'Deskripsi_Pangan' => 'Kedelai organik berkualitas untuk tempe dan tahu',
                 'Harga_Pangan' => 15000,
@@ -43,7 +40,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P004',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Singkong Segar',
                 'Deskripsi_Pangan' => 'Singkong segar pilihan dari kebun lokal',
                 'Harga_Pangan' => 5000,
@@ -52,7 +48,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P005',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Ubi Ungu',
                 'Deskripsi_Pangan' => 'Ubi ungu manis kaya nutrisi',
                 'Harga_Pangan' => 7000,
@@ -61,7 +56,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P006',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Kentang',
                 'Deskripsi_Pangan' => 'Kentang segar untuk berbagai olahan',
                 'Harga_Pangan' => 9000,
@@ -70,7 +64,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P007',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Kacang Hijau',
                 'Deskripsi_Pangan' => 'Kacang hijau berkualitas untuk bubur dan kolak',
                 'Harga_Pangan' => 11000,
@@ -79,7 +72,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P008',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Gandum',
                 'Deskripsi_Pangan' => 'Gandum pilihan untuk tepung berkualitas',
                 'Harga_Pangan' => 13000,
@@ -88,7 +80,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P009',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Sagu',
                 'Deskripsi_Pangan' => 'Sagu murni dari pohon sagu asli',
                 'Harga_Pangan' => 10000,
@@ -97,7 +88,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P010',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Gabah Kering',
                 'Deskripsi_Pangan' => 'Gabah padi kering siap digiling',
                 'Harga_Pangan' => 6500,
@@ -106,7 +96,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P011',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Jagung Pipilan',
                 'Deskripsi_Pangan' => 'Jagung pipilan kering berkualitas',
                 'Harga_Pangan' => 7500,
@@ -115,7 +104,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P012',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Cabai Merah Besar',
                 'Deskripsi_Pangan' => 'Cabai merah besar segar dan pedas',
                 'Harga_Pangan' => 35000,
@@ -124,7 +112,6 @@ class PanganSeeder extends Seeder
             ],
             [
                 'idPangan' => 'P013',
-                'idMitra' => 'M001',
                 'Nama_Pangan' => 'Cabai Rawit Hijau',
                 'Deskripsi_Pangan' => 'Cabai rawit hijau super pedas',
                 'Harga_Pangan' => 45000,
