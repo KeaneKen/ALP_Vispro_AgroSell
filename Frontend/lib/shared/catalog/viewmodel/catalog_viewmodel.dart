@@ -19,6 +19,45 @@ class CatalogViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
+  // Map category to asset image
+  String _getCategoryImage(String category, String? idFotoPangan) {
+    // First, try to match specific product images from assets
+    if (idFotoPangan != null && idFotoPangan.isNotEmpty) {
+      // Map database image names to actual asset files
+      final imageMap = {
+        'cabai_merah.jpg': 'assets/images/cabe 1.jpg',
+        'cabai_rawit.jpg': 'assets/images/cabe 2.jpg',
+        'cabai.jpg': 'assets/images/cabe 3.jpg',
+        'jagung.jpg': 'assets/images/jagung 1.jpg',
+        'jagung_pipil.jpg': 'assets/images/jagung 2.jpg',
+        'jagung_manis.png': 'assets/images/jagung_manis.png',
+        'beras.jpg': 'assets/images/padi 1.jpg',
+        'gabah.jpg': 'assets/images/padi 2.jpg',
+        'padi.jpg': 'assets/images/padi 3.jpg',
+      };
+      
+      if (imageMap.containsKey(idFotoPangan)) {
+        return imageMap[idFotoPangan]!;
+      }
+    }
+    
+    // Fallback to category-based images
+    switch (category.toLowerCase()) {
+      case 'padi':
+        return 'assets/images/padi 1.jpg';
+      case 'jagung':
+        return 'assets/images/jagung 1.jpg';
+      case 'cabai':
+        return 'assets/images/cabe 1.jpg';
+      case 'sayuran':
+        return 'assets/images/jagung_manis.png'; // Use available image as placeholder
+      case 'buah':
+        return 'assets/images/jagung_manis.png'; // Use available image as placeholder
+      default:
+        return 'assets/images/jagung_manis.png'; // Default fallback
+    }
+  }
+
   // Initialize products from database
   Future<void> loadProducts({String? initialFilter}) async {
     _isLoading = true;
@@ -37,15 +76,31 @@ class CatalogViewModel extends ChangeNotifier {
       );
 
       _allProducts = panganList.map((pangan) {
+        // Get appropriate image based on product
+        final imagePath = _getCategoryImage(pangan.category, pangan.idFotoPangan);
+        
+        // Determine stock status based on some logic (can be enhanced)
+        String stockStatus = 'Tersedia';
+        bool isPreOrder = false;
+        
+        // You can add logic here to determine stock/PO status from database
+        if (pangan.hargaPangan > 30000) {
+          isPreOrder = true;
+          stockStatus = 'Pre-Order';
+        }
+        
         return {
           'id': pangan.idPangan,
           'name': pangan.namaPangan,
           'category': pangan.category,
+          'description': pangan.deskripsiPangan,
           'price': '${formatter.format(pangan.hargaPangan)}/kg',
-          'stock': 'Tersedia',
+          'rawPrice': pangan.hargaPangan.toString(),
+          'stock': stockStatus,
           'rating': '4.5',
-          'image': 'assets/images/default_product.png', // Will use icon if missing
-          'isPreOrder': 'false',
+          'image': imagePath,
+          'isPreOrder': isPreOrder.toString(),
+          'idFotoPangan': pangan.idFotoPangan,
         };
       }).toList();
 
@@ -87,7 +142,8 @@ class CatalogViewModel extends ChangeNotifier {
       
       // Filter by search query
       bool matchesSearch = _searchQuery.isEmpty ||
-                          product['name']!.toLowerCase().contains(_searchQuery.toLowerCase());
+                          product['name']!.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                          product['description']!.toLowerCase().contains(_searchQuery.toLowerCase());
       
       return matchesFilter && matchesSearch;
     }).toList();

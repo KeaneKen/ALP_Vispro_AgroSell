@@ -7,6 +7,8 @@ import '../../process/view/process_status_view.dart';
 import '../../po/view/detail_po_view.dart'; // Pastikan import ini ada
 import '../../po/view/form_po_view.dart'; // Import FormPO widget jika belum
 import '../../delivery/view/delivery_status_view.dart'; // Import DeliveryStatusView
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 // Label status pembayaran dinamis sesuai kategori
 String _getPaymentLabel(String? category) {
@@ -34,6 +36,7 @@ class MitraProfileView extends StatefulWidget {
 
 class _MitraProfileViewState extends State<MitraProfileView> {
   final MitraProfileViewModel _viewModel = MitraProfileViewModel();
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -55,6 +58,50 @@ class _MitraProfileViewState extends State<MitraProfileView> {
     _viewModel.removeListener(_onViewModelChanged);
     _viewModel.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      // Show dialog to choose between camera and gallery
+      final source = await showDialog<ImageSource>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Pilih Sumber Gambar'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Kamera'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galeri'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (source != null) {
+        final XFile? image = await _picker.pickImage(
+          source: source,
+          maxWidth: 800,
+          maxHeight: 800,
+        );
+
+        if (image != null) {
+          // Upload the image
+          await _viewModel.uploadProfilePicture(File(image.path));
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memilih gambar: $e')),
+      );
+    }
   }
 
   @override
@@ -242,17 +289,46 @@ class _MitraProfileViewState extends State<MitraProfileView> {
       ),
       child: Row(
         children: [
-          // Gambar/Avatar
-          Container(
-            width: 50,
-            height: 50,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                image: AssetImage('assets/images/dummy_avatar.png'),
-                fit: BoxFit.cover,
-              ),
-              color: AppColors.primaryLight,
+          // Gambar/Avatar with edit capability
+          GestureDetector(
+            onTap: _pickImage,
+            child: Stack(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: _viewModel.profilePicture != null && _viewModel.profilePicture!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(_viewModel.profilePicture!),
+                            fit: BoxFit.cover,
+                          )
+                        : const DecorationImage(
+                            image: AssetImage('assets/images/dummy_avatar.png'),
+                            fit: BoxFit.cover,
+                          ),
+                    color: AppColors.primaryLight,
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 15),

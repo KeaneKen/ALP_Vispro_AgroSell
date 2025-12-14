@@ -40,6 +40,7 @@ dependencies:
   
   # Internationalization
   intl: ^0.20.2
+  fl_chart: ^0.69.0
   
   # HTTP client for API calls
   http: ^1.2.2
@@ -49,6 +50,13 @@ dependencies:
   
   # Local storage for user session
   shared_preferences: ^2.2.2
+  
+  # Image picker for profile pictures
+  image_picker: ^1.0.7
+  
+  # WebSocket and real-time communication
+  web_socket_channel: ^2.4.0
+  pusher_channels_flutter: ^2.2.1
 
 dev_dependencies:
   flutter_test:

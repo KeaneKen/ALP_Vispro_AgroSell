@@ -4,8 +4,9 @@ import '../viewmodel/bumdes_profile_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
 import '../list_po/view/list_po_view.dart';
 import '../dikirim/view/dikirim_view.dart';
-// import '../grafik/view/grafik_view.dart';
-// import '../pendataan/view/pendataan_view.dart';
+import '../grafik/view/grafik_view.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class BumdesProfileView extends StatefulWidget {
   const BumdesProfileView({super.key});
@@ -16,6 +17,7 @@ class BumdesProfileView extends StatefulWidget {
 
 class _BumdesProfileViewState extends State<BumdesProfileView> {
   final BumdesProfileViewModel _viewModel = BumdesProfileViewModel();
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -32,6 +34,50 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
   void dispose() {
     _viewModel.removeListener(_onViewModelChange);
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      // Show dialog to choose between camera and gallery
+      final source = await showDialog<ImageSource>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Pilih Sumber Gambar'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Kamera'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galeri'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (source != null) {
+        final XFile? image = await _picker.pickImage(
+          source: source,
+          maxWidth: 800,
+          maxHeight: 800,
+        );
+
+        if (image != null) {
+          // Upload the image
+          await _viewModel.uploadProfilePicture(File(image.path));
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memilih gambar: $e')),
+      );
+    }
   }
 
   @override
@@ -112,18 +158,50 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
       ),
       child: Row(
         children: [
-          // Profile Image/Avatar
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(35),
-            ),
-            child: const Icon(
-              Icons.business,
-              size: 40,
-              color: Colors.white,
+          // Profile Image/Avatar with edit capability
+          GestureDetector(
+            onTap: _pickImage,
+            child: Stack(
+              children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight,
+                    borderRadius: BorderRadius.circular(35),
+                    image: _viewModel.profilePicture != null && _viewModel.profilePicture!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(_viewModel.profilePicture!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: _viewModel.profilePicture == null || _viewModel.profilePicture!.isEmpty
+                      ? const Icon(
+                          Icons.business,
+                          size: 40,
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 16),
@@ -349,37 +427,37 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
                     ],
                   ),
                 ),
-                // GestureDetector(
-                //   onTap: () => Navigator.push(
-                //     context, 
-                //     MaterialPageRoute(builder: (context) => const GrafikView()),
-                //   ),
-                //   child: Container(
-                //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                //     decoration: BoxDecoration(
-                //       color: AppColors.primary.withOpacity(0.1),
-                //       borderRadius: BorderRadius.circular(20),
-                //     ),
-                //     child: Row(
-                //       children: [
-                //         Text(
-                //           'Riwayat',
-                //           style: TextStyle(
-                //             fontSize: 12,
-                //             fontWeight: FontWeight.w500,
-                //             color: AppColors.primary,
-                //           ),
-                //         ),
-                //         const SizedBox(width: 4),
-                //         Icon(
-                //           Icons.history,
-                //           size: 14,
-                //           color: AppColors.primary,
-                //         ),
-                //       ],
-                //     ),
-                //   ),
-                // ),
+                GestureDetector(
+                  onTap: () => Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: (context) => GrafikView(viewModel: _viewModel)),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Grafik',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.bar_chart,
+                          size: 14,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/config/api_config.dart';
 import '../viewmodel/dashboard_viewmodel.dart';
 import '../../product_detail/product_detail_route.dart';
 import '../../cart/cart_route.dart';
@@ -123,14 +124,62 @@ class _DashboardViewState extends State<DashboardView> {
               ),
             ),
 
-            // Scrollable content
+            // Scrollable content with pull-to-refresh
             Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: () async {
+                  await _viewModel.refreshProducts();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        
+
+                // Category Filter Chips
+                SizedBox(
+                  height: 40,
+                  child: AnimatedBuilder(
+                    animation: _viewModel,
+                    builder: (context, child) {
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _viewModel.categories.length,
+                        itemBuilder: (context, index) {
+                          final category = _viewModel.categories[index];
+                          final isSelected = _viewModel.selectedCategory == category;
+                          
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: FilterChip(
+                              label: Text(category),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                _viewModel.setSelectedCategory(category);
+                              },
+                              backgroundColor: Colors.white,
+                              selectedColor: AppColors.primary,
+                              labelStyle: TextStyle(
+                                color: isSelected ? Colors.white : AppColors.textPrimary,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                              checkmarkColor: Colors.white,
+                              side: BorderSide(
+                                color: isSelected ? AppColors.primary : Colors.grey[300]!,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
 
                 // Banner Preorder
                 Container(
@@ -292,6 +341,80 @@ class _DashboardViewState extends State<DashboardView> {
                       );
                     }
 
+                    if (_viewModel.error != null) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.cloud_off, size: 64, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Database Connection Failed',
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'To start the backend:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '1. Open terminal in Backend folder\n'
+                                      '2. Run: php artisan serve\n'
+                                      '3. Make sure database is running\n'
+                                      '4. Database should be seeded',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _viewModel.error ?? '',
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 11,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () => _viewModel.loadProducts(),
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('Retry Connection'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
                     if (_viewModel.filteredProducts.isEmpty) {
                       return Center(
                         child: Padding(
@@ -302,9 +425,18 @@ class _DashboardViewState extends State<DashboardView> {
                               Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
                               const SizedBox(height: 16),
                               Text(
-                                'Produk tidak ditemukan',
+                                _viewModel.searchQuery.isNotEmpty 
+                                  ? 'Produk tidak ditemukan' 
+                                  : 'Tidak ada produk dalam kategori ini',
                                 style: TextStyle(color: Colors.grey[600], fontSize: 16),
                               ),
+                              if (_viewModel.searchQuery.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Coba cari dengan kata kunci lain',
+                                  style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -327,7 +459,8 @@ class _DashboardViewState extends State<DashboardView> {
                     );
                   },
                 ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -455,11 +588,22 @@ class _DashboardViewState extends State<DashboardView> {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: Padding(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.8),
+                      ],
+                    ),
+                  ),
                   padding: const EdgeInsets.all(12.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Product name
                       Text(
                         product['name']!,
                         style: const TextStyle(
@@ -470,11 +614,45 @@ class _DashboardViewState extends State<DashboardView> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
+                      // Rating and stock
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: Colors.amber, size: 14),
+                          const SizedBox(width: 2),
+                          Text(
+                            product['rating'] ?? '4.5',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: product['stock'] == 'Tersedia' 
+                                ? Colors.green.withOpacity(0.8)
+                                : Colors.orange.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              product['stock']!,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      // Price
                       Text(
                         product['price'] ?? 'Rp 15.000/kg',
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),

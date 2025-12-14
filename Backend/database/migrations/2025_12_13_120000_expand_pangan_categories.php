@@ -9,15 +9,12 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * Expands the category enum to support all frontend categories
+     * Expands the category to support all frontend categories
      */
     public function up(): void
     {
-        // For MySQL, we need to modify the enum column
-        // First, change to string to allow any value temporarily
-        Schema::table('pangan', function (Blueprint $table) {
-            $table->string('category', 50)->default('Lainnya')->change();
-        });
+        // Simply run raw SQL to modify the enum - this works without doctrine/dbal
+        DB::statement("ALTER TABLE pangan MODIFY COLUMN category VARCHAR(50) DEFAULT 'Lainnya'");
     }
 
     /**
@@ -25,8 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pangan', function (Blueprint $table) {
-            $table->string('category', 50)->default('Lainnya')->change();
-        });
+        DB::statement("ALTER TABLE pangan MODIFY COLUMN category VARCHAR(50) DEFAULT 'Lainnya'");
     }
 };

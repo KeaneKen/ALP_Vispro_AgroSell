@@ -4,6 +4,7 @@ class BumdesModel {
   final String noTelpBumdes;
   final String emailBumdes;
   final String passwordBumdes;
+  final String? profilePicture;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -13,6 +14,7 @@ class BumdesModel {
     this.noTelpBumdes = '',
     required this.emailBumdes,
     required this.passwordBumdes,
+    this.profilePicture,
     this.createdAt,
     this.updatedAt,
   });
@@ -24,6 +26,7 @@ class BumdesModel {
       noTelpBumdes: json['NoTelp_BumDES'] ?? json['phone'] ?? json['NoTelp_Bumdes'] ?? '',
       emailBumdes: json['Email_BumDES'] ?? json['email'] ?? json['Email_Bumdes'] ?? '',
       passwordBumdes: json['Password_BumDES'] ?? json['password'] ?? json['Password_Bumdes'] ?? '',
+      profilePicture: json['profile_picture'],
       createdAt: json['created_at'] != null 
           ? DateTime.parse(json['created_at']) 
           : null,
@@ -40,6 +43,7 @@ class BumdesModel {
       'phone': noTelpBumdes,
       'email': emailBumdes,
       'password': passwordBumdes,
+      'profile_picture': profilePicture,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };

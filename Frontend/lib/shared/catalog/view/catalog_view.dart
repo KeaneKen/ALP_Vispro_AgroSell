@@ -106,6 +106,12 @@ class _CatalogViewState extends State<CatalogView> {
                   const SizedBox(width: 8),
                   _buildFilterButton('Cabai'),
                   const SizedBox(width: 8),
+                  _buildFilterButton('Sayuran'),
+                  const SizedBox(width: 8),
+                  _buildFilterButton('Buah'),
+                  const SizedBox(width: 8),
+                  _buildFilterButton('Lainnya'),
+                  const SizedBox(width: 8),
                   _buildFilterButton('PO'),
                 ],
               ),
@@ -122,6 +128,30 @@ class _CatalogViewState extends State<CatalogView> {
                 if (_viewModel.isLoading) {
                   return const Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
+                  );
+                }
+                
+                if (_viewModel.error != null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Gagal memuat produk',
+                          style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () => _viewModel.loadProducts(initialFilter: widget.initialFilter),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                          ),
+                          child: const Text('Coba Lagi', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
                   );
                 }
                 
@@ -292,7 +322,7 @@ class _CatalogViewState extends State<CatalogView> {
                   Text(
                     product['name']!,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textPrimary,
                     ),
@@ -300,10 +330,54 @@ class _CatalogViewState extends State<CatalogView> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
+                  // Rating and Stock Indicator Row
+                  Row(
+                    children: [
+                      // Rating
+                      Icon(Icons.star, color: Colors.amber, size: 14),
+                      const SizedBox(width: 2),
+                      Text(
+                        product['rating'] ?? '4.5',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Stock Indicator
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: product['isPreOrder'] == 'true' 
+                            ? AppColors.secondary.withOpacity(0.15)
+                            : Colors.green.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: product['isPreOrder'] == 'true' 
+                              ? AppColors.secondary
+                              : Colors.green,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          product['isPreOrder'] == 'true' ? 'Pre-Order' : 'Tersedia',
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: product['isPreOrder'] == 'true' 
+                              ? AppColors.secondary
+                              : Colors.green[700],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Price
                   Text(
                     product['price']!,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: AppColors.secondary,
                       fontWeight: FontWeight.w600,
                     ),

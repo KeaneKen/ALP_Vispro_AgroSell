@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/mitra_repository.dart';
 import '../../../core/models/mitra_model.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 // --- ENUM untuk Status Pengiriman (Timeline) ---
 enum OrderStatus {
@@ -51,6 +54,7 @@ class MitraProfileViewModel extends ChangeNotifier {
   String _mitraType = 'Loading...';
   String _mitraEmail = '';
   String _mitraPhone = '';
+  String? _profilePicture;
   List<OrderItem> _orders = [];
   List<PreOrderItem> _preOrders = [];
   bool _isLoading = false;
@@ -63,6 +67,7 @@ class MitraProfileViewModel extends ChangeNotifier {
   String get mitraType => _mitraType;
   String get mitraEmail => _mitraEmail;
   String get mitraPhone => _mitraPhone;
+  String? get profilePicture => _profilePicture;
   List<OrderItem> get orders => _orders;
   List<PreOrderItem> get preOrders => _preOrders;
   bool get isLoading => _isLoading;
@@ -95,6 +100,11 @@ class MitraProfileViewModel extends ChangeNotifier {
       _mitraName = mitra.namaMitra;
       _mitraEmail = mitra.emailMitra;
       _mitraPhone = mitra.noTelpMitra ?? '';
+      
+      // Check if profile picture exists
+      if (mitra.profilePicture != null && mitra.profilePicture!.isNotEmpty) {
+        _profilePicture = 'http://localhost:8000/storage/profile_pictures/${mitra.profilePicture}';
+      }
       
       // Set mitra type based on business logic or add it to the model if needed
       _mitraType = 'Restoran'; // This could be fetched from database if you add a type field
@@ -173,5 +183,51 @@ class MitraProfileViewModel extends ChangeNotifier {
   void updateMitraType(String type) {
     _mitraType = type;
     notifyListeners();
+  }
+
+  Future<void> uploadProfilePicture(File imageFile) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final mitraId = await _authService.getMitraId();
+      if (mitraId == null) {
+        throw Exception('User not logged in');
+      }
+
+      // Create multipart request
+      final uri = Uri.parse('http://localhost:8000/api/mitra/$mitraId/upload-profile-picture');
+      final request = http.MultipartRequest('POST', uri);
+      
+      // Add file to request
+      final stream = http.ByteStream(imageFile.openRead());
+      final length = await imageFile.length();
+      final multipartFile = http.MultipartFile(
+        'profile_picture',
+        stream,
+        length,
+        filename: 'profile_$mitraId.jpg',
+      );
+      request.files.add(multipartFile);
+      
+      // Send request
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      
+      if (response.statusCode == 200) {
+        // Parse response to get the image URL
+        final data = json.decode(responseBody);
+        _profilePicture = data['data']['profile_picture_url'];
+        notifyListeners();
+      } else {
+        throw Exception('Failed to upload profile picture');
+      }
+    } catch (e) {
+      _error = e.toString();
+      debugPrint('Error uploading profile picture: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }
