@@ -50,7 +50,7 @@ class NotificationViewModel extends ChangeNotifier {
       NotificationItem(
         id: '1',
         title: 'Pesanan Berhasil',
-        message: 'Pesanan Padi IR64 Anda telah dikonfirmasi oleh BUMDes',
+        message: 'Pesanan Padi Ampari Anda telah dikonfirmasi oleh BUMDes',
         timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
         type: NotificationType.order,
         isRead: false,
@@ -60,20 +60,20 @@ class NotificationViewModel extends ChangeNotifier {
       NotificationItem(
         id: '2',
         title: 'Produk Best Seller!',
-        message: 'Padi Varietas IR64 menjadi produk terlaris minggu ini',
+        message: 'Padi Ampari menjadi produk terlaris minggu ini',
         timestamp: DateTime.now().subtract(const Duration(hours: 2)),
         type: NotificationType.promo,
         isRead: false,
         actionData: {
           'route': 'product_detail',
           'product': {
-            'name': 'Padi Varietas IR64',
+            'name': 'Padi Ampari',
             'category': 'Padi',
-            'price': 'Rp 11.500/kg',
+            'price': 'Rp 7.200/kg',
             'stock': 'Stok: 800kg',
             'rating': '4.9',
             'image': 'assets/images/padi 2.jpg',
-            'isPreOrder': 'true',
+            'isPreOrder': 'false',
           },
         },
       ),
