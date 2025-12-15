@@ -12,6 +12,9 @@ class ProductDetailViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   void setProduct(Map<String, dynamic> product) {
+    debugPrint('🔍 Setting product: $product');
+    debugPrint('🔍 Product keys: ${product.keys.toList()}');
+    debugPrint('🔍 Product values types: ${product.values.map((v) => v.runtimeType).toList()}');
     _product = product;
     _quantity = 1;
     notifyListeners();
@@ -60,7 +63,9 @@ class ProductDetailViewModel extends ChangeNotifier {
     if (_product == null) return 'Rp 0';
 
     // Extract price number from string like "Rp 5.800/kg"
-    String priceStr = _product!['price'] as String;
+    String? priceStr = _product!['price'] as String?;
+    if (priceStr == null) return 'Rp 0';
+    
     String numericPrice = priceStr
         .replaceAll('Rp ', '')
         .replaceAll('/kg', '')

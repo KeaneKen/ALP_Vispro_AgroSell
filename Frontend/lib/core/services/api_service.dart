@@ -34,12 +34,18 @@ class ApiService {
         uri = uri.replace(queryParameters: queryParams);
       }
 
+      debugPrint('GET Request to: $uri');
+      
       final response = await http
           .get(uri, headers: _headers)
           .timeout(ApiConfig.connectTimeout);
 
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
+      
       return _handleResponse(response);
     } catch (e) {
+      debugPrint('GET Error: $e');
       throw _handleError(e);
     }
   }

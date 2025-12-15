@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../viewmodel/login_viewmodel.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../main.dart';
+import '../../core/theme/app_colors.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -23,9 +22,7 @@ class _LoginViewState extends State<LoginView> {
 
   void _onViewModelChange() {
     if (_viewModel.isLoggedIn) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MainScreen()),
-      );
+      Navigator.of(context).pushReplacementNamed('/main');
     }
 
     if (_viewModel.errorMessage != null) {

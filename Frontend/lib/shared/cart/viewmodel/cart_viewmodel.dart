@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/cart_repository.dart';
+import '../../../core/services/payment_repository.dart';
+import '../../../core/services/riwayat_repository.dart';
 import '../../../core/models/cart_model.dart';
 
 class CartViewModel extends ChangeNotifier {
@@ -9,6 +11,8 @@ class CartViewModel extends ChangeNotifier {
   CartViewModel._internal();
 
   final CartRepository _cartRepository = CartRepository();
+  final PaymentRepository _paymentRepository = PaymentRepository();
+  final RiwayatRepository _riwayatRepository = RiwayatRepository();
   final List<Map<String, dynamic>> _cartItems = [];
   final Set<int> _selectedIndices = {};
   bool _isLoading = false;
@@ -30,14 +34,16 @@ class CartViewModel extends ChangeNotifier {
   String get totalPrice {
     int total = 0;
     for (var item in _cartItems) {
-      String priceStr = item['price'] as String;
+      String? priceStr = item['price'] as String?;
+      if (priceStr == null) continue;
+      
       String numericPrice = priceStr
           .replaceAll('Rp ', '')
           .replaceAll('/kg', '')
           .replaceAll('.', '')
           .trim();
       int pricePerUnit = int.tryParse(numericPrice) ?? 0;
-      int quantity = item['quantity'] as int;
+      int quantity = item['quantity'] as int? ?? 0;
       total += pricePerUnit * quantity;
     }
 
@@ -63,22 +69,26 @@ class CartViewModel extends ChangeNotifier {
     }
 
     try {
-      // Save to backend database
-      await _cartRepository.addToCart(productId, quantity);
+      // Save to backend database and get the cart item with cartId
+      final cartItem = await _cartRepository.addToCart(productId, quantity);
       
-      // Also update local cart for immediate UI update
+      debugPrint('🛒 Cart item received: idCart=${cartItem.idCart}');
+      
+      // Update local cart with cartId from backend
       int existingIndex = _cartItems.indexWhere(
         (item) => item['id'] == productId,
       );
 
       if (existingIndex != -1) {
-        // Update quantity if product already exists
+        // Update quantity and cartId if product already exists
         _cartItems[existingIndex]['quantity'] += quantity;
+        _cartItems[existingIndex]['cartId'] = cartItem.idCart;
       } else {
-        // Add new product to cart
+        // Add new product to cart with cartId
         _cartItems.add({
           ...product,
           'quantity': quantity,
+          'cartId': cartItem.idCart,  // ✅ Store the cartId from backend!
         });
       }
 
@@ -220,22 +230,104 @@ class CartViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> checkout() async {
+  Future<bool> checkout({
+    String? deliveryAddress,
+    String? phoneNumber,
+    String? notes,
+  }) async {
+    if (_cartItems.isEmpty) {
+      _errorMessage = 'Cart is empty';
+      return false;
+    }
+
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
-    // TODO: Implement API call for checkout
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Step 1: Calculate total price
+      double totalPrice = 0;
+      for (var item in _cartItems) {
+        String? priceStr = item['price'] as String?;
+        if (priceStr == null) continue;
+        
+        String numericPrice = priceStr
+            .replaceAll('Rp ', '')
+            .replaceAll('/kg', '')
+            .replaceAll('.', '')
+            .trim();
+        int pricePerUnit = int.tryParse(numericPrice) ?? 0;
+        int quantity = item['quantity'] as int? ?? 0;
+        totalPrice += (pricePerUnit * quantity);
+      }
 
-    _isLoading = false;
-    notifyListeners();
+      // Step 2: Get the first cart item's cartId (we'll use this for payment)
+      // In a real app, you might want to create a new "order" entity
+      String? cartId = _cartItems.isNotEmpty ? _cartItems[0]['cartId'] as String? : null;
+      
+      if (cartId == null || cartId.isEmpty) {
+        _errorMessage = 'Invalid cart data';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      debugPrint('💳 Processing checkout...');
+      debugPrint('💳 Cart ID: $cartId');
+      debugPrint('💳 Total: Rp ${totalPrice.toStringAsFixed(0)}');
+
+      // Step 3: Create payment record (mock payment)
+      final payment = await _paymentRepository.createPayment(cartId, totalPrice);
+      debugPrint('✅ Payment created: ${payment.idPayment}');
+
+      // Step 4: Create riwayat (order history) record with delivery info
+      final riwayat = await _riwayatRepository.createRiwayat(
+        payment.idPayment,
+        status: 'processing',
+        deliveryAddress: deliveryAddress,
+        phoneNumber: phoneNumber,
+        notes: notes,
+      );
+      debugPrint('✅ Order history created: ${riwayat.idHistory}');
+
+      // Step 5: Clear cart items from backend
+      for (var item in _cartItems) {
+        final itemCartId = item['cartId'] as String?;
+        if (itemCartId != null && itemCartId.isNotEmpty) {
+          try {
+            await _cartRepository.removeFromCart(itemCartId);
+          } catch (e) {
+            debugPrint('⚠️ Failed to remove cart item $itemCartId: $e');
+          }
+        }
+      }
+
+      // Step 6: Clear local cart
+      _cartItems.clear();
+      _selectedIndices.clear();
+      
+      _isLoading = false;
+      notifyListeners();
+      
+      debugPrint('✅ Checkout completed successfully!');
+      return true;
+
+    } catch (e) {
+      _errorMessage = 'Checkout failed: $e';
+      _isLoading = false;
+      notifyListeners();
+      debugPrint('❌ Checkout error: $e');
+      return false;
+    }
   }
 
   String getItemTotalPrice(int index) {
     if (index < 0 || index >= _cartItems.length) return 'Rp 0';
 
     var item = _cartItems[index];
-    String priceStr = item['price'] as String;
+    String? priceStr = item['price'] as String?;
+    if (priceStr == null) return 'Rp 0';
+    
     String numericPrice = priceStr
         .replaceAll('Rp ', '')
         .replaceAll('/kg', '')
@@ -243,7 +335,7 @@ class CartViewModel extends ChangeNotifier {
         .trim();
 
     int pricePerUnit = int.tryParse(numericPrice) ?? 0;
-    int quantity = item['quantity'] as int;
+    int quantity = item['quantity'] as int? ?? 0;
     int total = pricePerUnit * quantity;
 
     String formattedTotal = total.toString().replaceAllMapped(

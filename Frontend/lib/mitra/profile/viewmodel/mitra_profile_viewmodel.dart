@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/mitra_repository.dart';
+import '../../../core/services/riwayat_repository.dart';
 import '../../../core/models/mitra_model.dart';
+import '../../../core/models/riwayat_model.dart';
 import '../../../core/config/api_config.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -9,9 +11,11 @@ import 'dart:convert';
 
 // --- ENUM untuk Status Pengiriman (Timeline) ---
 enum OrderStatus {
-  paymentStatus, // Status Pembayaran
-  inProcess, // Sedang Diproses (Tahap 2)
-  shipped, // Dikirim (Tahap 3)
+  processing, // Sedang Diproses (Tahap 1)
+  givenToCourier, // Diserahkan ke Kurir (Tahap 2)
+  onTheWay, // Dalam Perjalanan (Tahap 3)
+  arrived, // Sampai Tujuan (Tahap 4)
+  completed, // Pesanan Selesai
 }
 
 // --- MODEL DATA PESANAN ---
@@ -50,6 +54,7 @@ class PreOrderItem {
 class MitraProfileViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
   final MitraRepository _mitraRepository = MitraRepository();
+  final RiwayatRepository _riwayatRepository = RiwayatRepository();
   
   String _mitraName = 'Loading...';
   String _mitraType = 'Loading...';
@@ -111,33 +116,10 @@ class MitraProfileViewModel extends ChangeNotifier {
       // Set mitra type based on business logic or add it to the model if needed
       _mitraType = 'Restoran'; // This could be fetched from database if you add a type field
       
-      // For now, keep sample data for orders and pre-orders
-      // These should be fetched from backend when endpoints are available
-      _orders = [
-        OrderItem(
-          id: '1',
-          name: 'Jagung',
-          type: 'Pre-Order',
-          currentStatus: OrderStatus.inProcess,
-          imageUrl: 'assets/images/jagung 1.jpg',
-        ),
-        OrderItem(
-          id: '2',
-          name: 'Cabai',
-          type: 'Non Pre-Order',
-          currentStatus: OrderStatus.shipped,
-          imageUrl: 'assets/images/cabe 1.jpg',
-        ),
-        OrderItem(
-          id: '3',
-          name: 'Padi',
-          type: 'Pre-Order',
-          currentStatus: OrderStatus.paymentStatus,
-          imageUrl: 'assets/images/padi 1.jpg',
-        ),
-      ];
-
-      // Data Sample List & Detail Pre-Order
+      // Fetch real order history from backend
+      await _fetchOrderHistory();
+      
+      // For now, keep sample data for pre-orders (can be replaced with real data if backend exists)
       _preOrders = [
         PreOrderItem(
           id: '1',
@@ -167,6 +149,67 @@ class MitraProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Fetch order history from backend
+  Future<void> _fetchOrderHistory() async {
+    try {
+      final riwayatList = await _riwayatRepository.getOrderHistory();
+      
+      _orders = riwayatList.map((riwayat) {
+        // Map backend status to OrderStatus enum
+        OrderStatus status;
+        switch (riwayat.status) {
+          case 'processing':
+            status = OrderStatus.processing;
+            break;
+          case 'given_to_courier':
+            status = OrderStatus.givenToCourier;
+            break;
+          case 'on_the_way':
+            status = OrderStatus.onTheWay;
+            break;
+          case 'arrived':
+            status = OrderStatus.arrived;
+            break;
+          case 'completed':
+            status = OrderStatus.completed;
+            break;
+          default:
+            status = OrderStatus.processing;
+        }
+        
+        // Get product name from payment -> cart -> pangan relationship
+        String productName = 'Product';
+        String imageUrl = 'assets/images/default.jpg';
+        
+        if (riwayat.payment?.cart?.pangan != null) {
+          productName = riwayat.payment!.cart!.pangan!.namaPangan;
+          // You can add image mapping logic here if needed
+          if (productName.toLowerCase().contains('jagung')) {
+            imageUrl = 'assets/images/jagung 1.jpg';
+          } else if (productName.toLowerCase().contains('cabai') || productName.toLowerCase().contains('cabe')) {
+            imageUrl = 'assets/images/cabe 1.jpg';
+          } else if (productName.toLowerCase().contains('padi')) {
+            imageUrl = 'assets/images/padi 1.jpg';
+          }
+        }
+        
+        return OrderItem(
+          id: riwayat.idHistory,
+          name: productName,
+          type: riwayat.status == 'completed' ? 'Selesai' : 'Dalam Proses',
+          currentStatus: status,
+          imageUrl: imageUrl,
+        );
+      }).toList();
+      
+      debugPrint('✅ Loaded ${_orders.length} orders from backend');
+    } catch (e) {
+      debugPrint('⚠️ Failed to load order history: $e');
+      // Keep empty list on error
+      _orders = [];
+    }
+  }
+
   // Fungsi baru untuk membuka/menutup detail pesanan
   void toggleOrderExpand(String orderId) {
     if (_expandedOrderIds.contains(orderId)) {
@@ -180,6 +223,20 @@ class MitraProfileViewModel extends ChangeNotifier {
   void updateMitraName(String name) {
     _mitraName = name;
     notifyListeners();
+  }
+
+  /// Confirm order completion (Mitra marks as "Pesanan Selesai")
+  Future<void> confirmOrderCompletion(String orderId) async {
+    try {
+      await _riwayatRepository.updateOrderStatus(orderId, 'completed');
+      // Reload order history after update
+      await _fetchOrderHistory();
+      notifyListeners();
+      debugPrint('✅ Order $orderId marked as completed');
+    } catch (e) {
+      debugPrint('❌ Failed to confirm order completion: $e');
+      throw Exception('Gagal mengkonfirmasi pesanan: $e');
+    }
   }
 
   void updateMitraType(String type) {

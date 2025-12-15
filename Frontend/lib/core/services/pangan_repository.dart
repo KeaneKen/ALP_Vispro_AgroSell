@@ -23,9 +23,18 @@ class PanganRepository {
   // Get pangan by ID
   Future<PanganModel> getPanganById(String id) async {
     try {
+      print('🔍 Fetching pangan with ID: $id');
       final response = await _apiService.get('${ApiConfig.pangans}/$id');
-      return PanganModel.fromJson(response);
+      print('🔍 Backend response: $response');
+      
+      // Backend returns {success: true, message: ..., data: {...}}
+      if (response['success'] == true && response['data'] != null) {
+        return PanganModel.fromJson(Map<String, dynamic>.from(response['data']));
+      }
+      
+      throw Exception(response['message'] ?? 'Failed to fetch pangan');
     } catch (e) {
+      print('❌ Error in getPanganById: $e');
       throw Exception('Failed to fetch pangan: $e');
     }
   }

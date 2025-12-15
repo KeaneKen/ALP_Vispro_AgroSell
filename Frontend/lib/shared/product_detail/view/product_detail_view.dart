@@ -26,6 +26,12 @@ class _ProductDetailViewState extends State<ProductDetailView> {
   @override
   void initState() {
     super.initState();
+    debugPrint('🔍 ProductDetailView received product: ${widget.product}');
+    debugPrint('🔍 Product keys: ${widget.product.keys.toList()}');
+    debugPrint('🔍 Product name: ${widget.product['name']}');
+    debugPrint('🔍 Product category: ${widget.product['category']}');
+    debugPrint('🔍 Product price: ${widget.product['price']}');
+    debugPrint('🔍 Product image: ${widget.product['image']}');
     _viewModel.setProduct(widget.product);
   }
 
@@ -58,10 +64,18 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                     automaticallyImplyLeading: false,
                     flexibleSpace: FlexibleSpaceBar(
                       background: Hero(
-                        tag: 'product_${_viewModel.product!['name']}',
+                        tag: 'product_${_viewModel.product!['name'] ?? 'unknown'}',
                         child: Image.asset(
-                          _viewModel.product!['image'],
+                          _viewModel.product!['image'] ?? 'assets/images/jagung_manis.png',
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: AppColors.primaryLight,
+                              child: const Center(
+                                child: Icon(Icons.grass, size: 80, color: AppColors.primary),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -97,7 +111,7 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                _viewModel.product!['category'],
+                                _viewModel.product!['category'] ?? 'Lainnya',
                                 style: const TextStyle(
                                   color: AppColors.textPrimary,
                                   fontSize: 12,
@@ -110,7 +124,7 @@ class _ProductDetailViewState extends State<ProductDetailView> {
 
                             // Product Name
                             Text(
-                              _viewModel.product!['name'],
+                              _viewModel.product!['name'] ?? 'Produk',
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -122,7 +136,7 @@ class _ProductDetailViewState extends State<ProductDetailView> {
 
                             // Price
                             Text(
-                              _viewModel.product!['price'],
+                              _viewModel.product!['price'] ?? 'Rp 0',
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

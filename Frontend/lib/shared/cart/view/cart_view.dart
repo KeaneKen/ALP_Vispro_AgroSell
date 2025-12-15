@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../viewmodel/cart_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../product_detail/product_detail_route.dart';
+import '../../payment/payment_confirmation_view.dart';
 
 class CartView extends StatefulWidget {
   const CartView({Key? key}) : super(key: key);
@@ -236,29 +237,18 @@ class _CartViewState extends State<CartView> {
                         child: ElevatedButton(
                           onPressed: _viewModel.isLoading
                               ? null
-                              : () async {
-                                  await _viewModel.checkout();
-                                  if (context.mounted) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Checkout Berhasil'),
-                                        content: const Text(
-                                          'Pesanan Anda sedang diproses',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                              _viewModel.clearCart();
-                                              Navigator.pop(context);
-                                            },
-                                            child: const Text('OK'),
-                                          ),
-                                        ],
+                              : () {
+                                  // Navigate to payment confirmation screen
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PaymentConfirmationView(
+                                        totalAmount: _parseTotalAmount(_viewModel.totalPrice),
+                                        totalItems: _viewModel.totalItems,
+                                        cartViewModel: _viewModel,
                                       ),
-                                    );
-                                  }
+                                    ),
+                                  );
                                 },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.secondary,
@@ -528,5 +518,14 @@ class _CartViewState extends State<CartView> {
         ],
       ),
     );
+  }
+
+  double _parseTotalAmount(String totalPriceStr) {
+    // Remove "Rp " and dots, then parse to double
+    String numericStr = totalPriceStr
+        .replaceAll('Rp ', '')
+        .replaceAll('.', '')
+        .trim();
+    return double.tryParse(numericStr) ?? 0.0;
   }
 }

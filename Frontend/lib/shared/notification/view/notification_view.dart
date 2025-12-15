@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../viewmodel/notification_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/pangan_repository.dart'; // Add this import
 import '../../cart/cart_route.dart';
 import '../../chat/chat_route.dart';
 import '../../product_detail/product_detail_route.dart';
@@ -17,6 +18,7 @@ class NotificationView extends StatefulWidget {
 class _NotificationViewState extends State<NotificationView> {
   late NotificationViewModel _viewModel;
   final AuthService _authService = AuthService();
+  final PanganRepository _panganRepository = PanganRepository(); // Add this
 
   @override
   void initState() {
@@ -34,41 +36,142 @@ class _NotificationViewState extends State<NotificationView> {
     // Mark as read
     _viewModel.markAsRead(notification.id);
 
-    // Navigate based on notification type and action data
+    // Navigate based on notification type
     if (notification.actionData != null) {
-      final route = notification.actionData!['route'];
-
-      switch (route) {
-        case 'chat':
-          final userId = await _authService.getUserId();
+      switch (notification.type) {
+        case NotificationType.chat:
           final userType = await _authService.getUserType();
-          
-          final contactName = notification.actionData!['contactName'] as String;
-          final notifMitraId = notification.actionData!['mitraId'] as String?;
-          final notifBumdesId = notification.actionData!['bumdesId'] as String?;
-          
-          // Use logged-in user's ID for their role, notification data for the other party (default to mitra for testing)
-          final mitraId = userType == 'mitra' ? (userId ?? 'M001') : (notifMitraId ?? 'M001');
-          final bumdesId = userType == 'bumdes' ? (userId ?? 'B001') : (notifBumdesId ?? 'B001');
+          final userId = await _authService.getUserId();
           
           ChatRoute.navigate(
             context,
-            contactName: contactName,
-            mitraId: mitraId,
-            bumdesId: bumdesId,
+            contactName: notification.actionData!['senderType'] == 'mitra' 
+                ? 'Mitra' 
+                : 'BumDes',
+            mitraId: notification.actionData!['idMitra'] ?? (userType == 'mitra' ? userId ?? 'M001' : 'M001'),
+            bumdesId: notification.actionData!['idBumDes'] ?? (userType == 'bumdes' ? userId ?? 'B001' : 'B001'),
             currentUserType: userType ?? 'mitra',
           );
           break;
 
-        case 'product_detail':
-          final product = notification.actionData!['product'] as Map<String, dynamic>;
-          ProductDetailRoute.navigate(context, product);
+        case NotificationType.pangan:
+          // Fetch full product data before navigating
+          await _navigateToProductDetail(notification.actionData!['idPangan']);
+          break;
+
+        case NotificationType.system:
+          // Check if this is a pangan notification (fallback for old notifications)
+          if (notification.actionData!.containsKey('idPangan')) {
+            await _navigateToProductDetail(notification.actionData!['idPangan']);
+          }
           break;
 
         default:
+          // Handle other notification types if needed
+          final route = notification.actionData!['route'];
+          if (route == 'cart') {
+            CartRoute.navigate(context);
+          }
           break;
       }
     }
+  }
+
+  // New method to fetch and navigate to product detail
+  Future<void> _navigateToProductDetail(String productId) async {
+    try {
+      debugPrint('🔍 Navigating to product with ID: $productId');
+      
+      // Validate product ID
+      if (productId.isEmpty) {
+        throw Exception('Product ID is empty');
+      }
+      
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+
+      // Fetch full product data
+      debugPrint('🔍 Fetching product data from backend...');
+      final pangan = await _panganRepository.getPanganById(productId);
+      debugPrint('🔍 Received pangan: ${pangan.namaPangan}, price: ${pangan.hargaPangan}');
+      
+      // Close loading indicator
+      if (!mounted) return;
+      Navigator.pop(context);
+
+      // Convert to product format expected by ProductDetailView
+      final formatter = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      );
+
+      final product = {
+        'id': pangan.idPangan,
+        'name': pangan.namaPangan,
+        'category': pangan.category,
+        'description': pangan.deskripsiPangan,
+        'price': '${formatter.format(pangan.hargaPangan)}/kg',
+        'rawPrice': pangan.hargaPangan.toString(),
+        'stock': pangan.hargaPangan > 30000 ? 'Pre-Order' : 'Tersedia',
+        'rating': '4.5',
+        'image': _getProductImage(pangan.category, pangan.idFotoPangan),
+        'isPreOrder': (pangan.hargaPangan > 30000).toString(),
+        'dbImage': pangan.idFotoPangan,
+      };
+
+      debugPrint('✅ Product data prepared successfully:');
+      debugPrint('   Name: ${product['name']}');
+      debugPrint('   Price: ${product['price']}');
+      debugPrint('   Category: ${product['category']}');
+      debugPrint('   Image: ${product['image']}');
+
+      // Navigate to product detail
+      if (!mounted) return;
+      ProductDetailRoute.navigate(context, product);
+    } catch (e) {
+      debugPrint('❌ Error in _navigateToProductDetail: $e');
+      
+      // Close loading indicator if still showing
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      // Show error message
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memuat detail produk: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
+  }
+
+  // Helper method to get product image
+  String _getProductImage(String category, String idFotoPangan) {
+    final imageMapping = {
+      'beras.jpg': 'padi 1.jpg',
+      'gabah.jpg': 'padi 2.jpg',
+      'padi.jpg': 'padi 3.jpg',
+      'jagung.jpg': 'jagung 1.jpg',
+      'jagung_pipil.jpg': 'jagung 2.jpg',
+      'jagung_manis.jpg': 'jagung 3.jpg',
+      'cabai_merah.jpg': 'cabe 1.jpg',
+      'cabai_hijau.jpg': 'cabe 2.jpg',
+      'cabai_rawit.jpg': 'cabe 3.jpg',
+    };
+
+    final assetFile = imageMapping[idFotoPangan] ?? 'jagung_manis.png';
+    return 'assets/images/$assetFile';
   }
 
   @override
@@ -83,6 +186,10 @@ class _NotificationViewState extends State<NotificationView> {
           style: TextStyle(color: Colors.white),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () => _viewModel.refresh(),
+          ),
           IconButton(
             icon: const Icon(Icons.done_all, color: Colors.white),
             onPressed: () {
@@ -100,9 +207,37 @@ class _NotificationViewState extends State<NotificationView> {
       body: AnimatedBuilder(
         animation: _viewModel,
         builder: (context, child) {
-          if (_viewModel.isLoading) {
+          if (_viewModel.isLoading && _viewModel.notifications.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.primary),
+            );
+          }
+
+          if (_viewModel.errorMessage != null && _viewModel.notifications.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 80,
+                    color: Colors.red[300],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _viewModel.errorMessage!,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => _viewModel.refresh(),
+                    child: const Text('Coba Lagi'),
+                  ),
+                ],
+              ),
             );
           }
 
@@ -138,17 +273,21 @@ class _NotificationViewState extends State<NotificationView> {
             );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: _viewModel.notifications.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              color: Colors.grey[200],
+          return RefreshIndicator(
+            onRefresh: () => _viewModel.refresh(),
+            color: AppColors.primary,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: _viewModel.notifications.length,
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: Colors.grey[200],
+              ),
+              itemBuilder: (context, index) {
+                final notification = _viewModel.notifications[index];
+                return _buildNotificationItem(notification);
+              },
             ),
-            itemBuilder: (context, index) {
-              final notification = _viewModel.notifications[index];
-              return _buildNotificationItem(notification);
-            },
           );
         },
       ),

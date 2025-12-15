@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'view/chat_view_v2.dart';
+import 'view/chat_view.dart';
 
 class ChatRoute {
   static void navigate(
@@ -12,7 +12,7 @@ class ChatRoute {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ChatViewV2(
+        builder: (_) => ChatView(
           contactName: contactName,
           mitraId: mitraId,
           bumdesId: bumdesId,

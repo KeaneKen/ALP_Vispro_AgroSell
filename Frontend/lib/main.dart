@@ -1,123 +1,101 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'core/theme/app_colors.dart';
 import 'core/widgets/app_navbar.dart';
-import 'core/services/auth_service.dart';
+import 'splash/view/splash_view.dart';
+import 'splash/view/next_splash_view.dart';
+import 'splash/view/login_view.dart';
+import 'splash/view/register_view.dart';
+import 'splash/view/forgot_password_view.dart';
 import 'shared/dashboard/view/dashboard_view.dart';
 import 'shared/catalog/view/catalog_view.dart';
 import 'shared/notification/view/notification_view.dart';
-import 'bumdes/profile/view/bumdes_profile_view.dart';
 import 'mitra/profile/view/mitra_profile_view.dart';
-import 'splash/splash_route.dart';
+import 'bumdes/profile/view/bumdes_profile_view.dart';
+import 'core/services/auth_service.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  runApp(const MyApp());
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  runApp(const AgroSellApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AgroSellApp extends StatelessWidget {
+  const AgroSellApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'AgroSell',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primary,
           primary: AppColors.primary,
           secondary: AppColors.secondary,
+          surface: AppColors.surface,
+          background: AppColors.background,
         ),
         scaffoldBackgroundColor: AppColors.background,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
         useMaterial3: true,
       ),
-      initialRoute: '/login', // Replace 'home' with this
-      routes: SplashRoute.getRoutes(), // Add this line
-      onGenerateRoute: SplashRoute.generateRoute, // Add this line
+      initialRoute: '/splash',
+      routes: {
+        '/splash': (context) => const SplashView(),
+        '/next-splash': (context) => const NextSplashView(),
+        '/login': (context) => const LoginView(),
+        '/register': (context) => const RegisterView(),
+        '/forgot-password': (context) => const ForgotPasswordView(),
+        '/main': (context) => const MainScaffold(),
+      },
     );
   }
 }
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+/// Main scaffold with bottom navigation bar
+class MainScaffold extends StatefulWidget {
+  const MainScaffold({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
   final AuthService _authService = AuthService();
   String? _userType;
-  List<Widget> _screens = [];
 
   @override
   void initState() {
     super.initState();
-    _initializeScreens();
+    _loadUserType();
   }
 
-  Future<void> _initializeScreens() async {
-    // Get the user type from auth service
-    _userType = await _authService.getUserType();
-    
-    // Set screens based on user type
+  Future<void> _loadUserType() async {
+    final userType = await _authService.getUserType();
     setState(() {
-      _screens = [
-        const DashboardView(),
-        const CatalogView(),
-        const NotificationView(),
-        // Show the appropriate profile based on user type
-        _userType == 'bumdes' 
-            ? const BumdesProfileView()
-            : const MitraProfileView(),
-      ];
+      _userType = userType;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show loading indicator while determining user type
-    if (_screens.isEmpty) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
-
     return Scaffold(
-      body: Stack(
+      body: IndexedStack(
+        index: _currentIndex,
         children: [
-          _screens[_currentIndex],
-          // Debug indicator showing current user type
-          if (_userType != null)
-            Positioned(
-              top: 50,
-              right: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _userType == 'mitra' ? Colors.green : Colors.blue,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  _userType!.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
+          const DashboardView(),
+          const CatalogView(),
+          const NotificationView(),
+          _buildProfileView(),
         ],
       ),
       bottomNavigationBar: AppNavbar(
@@ -130,43 +108,14 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
-}
 
-class PlaceholderScreen extends StatelessWidget {
-  final String title;
-  final IconData icon;
-
-  const PlaceholderScreen({
-    super.key,
-    required this.title,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title, style: const TextStyle(color: AppColors.textLight)),
-        backgroundColor: AppColors.primary,
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 80, color: AppColors.primary),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  Widget _buildProfileView() {
+    // Show appropriate profile view based on user type
+    if (_userType == 'bumdes') {
+      return const BumdesProfileView();
+    } else {
+      // Default to Mitra profile
+      return const MitraProfileView();
+    }
   }
 }

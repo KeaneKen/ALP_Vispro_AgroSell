@@ -1,31 +1,10 @@
-import 'package:agrosell/mitra/po/view/detail_po_view.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../viewmodel/mitra_profile_viewmodel.dart';
-import '../../payment/view/payment_view.dart';
-import '../../process/view/process_status_view.dart';
-import '../../po/view/detail_po_view.dart'; // Pastikan import ini ada
-import '../../po/view/form_po_view.dart'; // Import FormPO widget jika belum
-import '../../delivery/view/delivery_status_view.dart'; // Import DeliveryStatusView
+import '../../po/view/detail_po_view.dart';
+import '../../po/view/form_po_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-
-// Label status pembayaran dinamis sesuai kategori
-String _getPaymentLabel(String? category) {
-  final name = (category ?? '').toLowerCase();
-  if (name.contains('jagung') || name.contains('corn')) {
-    return 'Status Pembayaran Jagung';
-  }
-  if (name.contains('cabai') ||
-      name.contains('chili') ||
-      name.contains('cabe')) {
-    return 'Status Pembayaran Cabai';
-  }
-  if (name.contains('padi') || name.contains('rice')) {
-    return 'Status Pembayaran Padi';
-  }
-  return 'Status Pembayaran';
-}
 
 class MitraProfileView extends StatefulWidget {
   const MitraProfileView({super.key});
@@ -254,21 +233,6 @@ class _MitraProfileViewState extends State<MitraProfileView> {
   }
 
   // --- WIDGET HELPER ---
-
-  Widget _buildHeaderTitle() {
-    return Container(
-      padding: const EdgeInsets.only(left: 20, top: 40, bottom: 5),
-      alignment: Alignment.bottomLeft,
-      child: Text(
-        'Profile',
-        style: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-      ),
-    );
-  }
 
   // BottomNavigationBar dihapus
 
@@ -518,8 +482,10 @@ class _MitraProfileViewState extends State<MitraProfileView> {
                   const SizedBox(height: 15),
                   // Timeline Status Pengiriman (tetap tampil di item: Jagung, Cabai, Padi)
                   _DeliveryStatusTimeline(
+                    orderId: order.id,
                     currentStatus: order.currentStatus,
                     categoryName: order.name,
+                    viewModel: _viewModel,
                   ),
                 ],
               ),
@@ -598,10 +564,15 @@ class _MitraProfileViewState extends State<MitraProfileView> {
 }
 
 class _DeliveryStatusTimeline extends StatelessWidget {
+  final String orderId;
   final OrderStatus currentStatus;
   final String? categoryName;
+  final MitraProfileViewModel viewModel;
+  
   const _DeliveryStatusTimeline({
+    required this.orderId,
     required this.currentStatus,
+    required this.viewModel,
     this.categoryName,
   });
 
@@ -610,129 +581,192 @@ class _DeliveryStatusTimeline extends StatelessWidget {
     final Color activeColor = AppColors.primary;
     final Color inactiveColor = AppColors.divider;
 
-    // Status checks
-    final bool isPaymentDone =
-        currentStatus.index > OrderStatus.paymentStatus.index;
-    final bool isInProcessActive =
-        currentStatus.index >= OrderStatus.inProcess.index;
-    final bool isShippedActive =
-        currentStatus.index >= OrderStatus.shipped.index;
-    final bool isPaymentActive =
-        currentStatus.index >= OrderStatus.paymentStatus.index;
-    final bool isDelivered = currentStatus.index > OrderStatus.shipped.index;
+    // Status checks - updated for new statuses
+    final bool isProcessingActive = currentStatus.index >= OrderStatus.processing.index;
+    final bool isGivenToCourierActive = currentStatus.index >= OrderStatus.givenToCourier.index;
+    final bool isOnTheWayActive = currentStatus.index >= OrderStatus.onTheWay.index;
+    final bool isArrivedActive = currentStatus.index >= OrderStatus.arrived.index;
+    final bool isCompleted = currentStatus == OrderStatus.completed;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
       children: [
-        // 1. Sudah Bayar / Status Pembayaran
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PaymentView(categoryName: categoryName),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Sedang Diproses (Processing)
+            _StatusStep(
+              label: 'Sedang\\nDiproses',
+              iconWidget: currentStatus == OrderStatus.processing
+                  ? Icon(Icons.hourglass_empty, size: 20, color: activeColor)
+                  : (currentStatus.index > OrderStatus.processing.index
+                        ? Icon(Icons.check_circle, size: 20, color: activeColor)
+                        : Icon(Icons.hourglass_empty, size: 20, color: inactiveColor)),
+              isActive: isProcessingActive,
+              activeColor: activeColor,
+              inactiveColor: inactiveColor,
+            ),
+            // Line 1 -> 2
+            Expanded(
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.only(top: 18),
+                  color: isGivenToCourierActive ? activeColor : inactiveColor,
+                ),
               ),
-            );
-          },
-          child: _StatusStep(
-            label: isPaymentDone
-                ? 'Sudah Bayar'
-                : _getPaymentLabel(categoryName),
-            iconWidget: isPaymentDone
-                ? Icon(Icons.check_circle, size: 20, color: activeColor)
-                : Icon(
-                    Icons.payments_outlined,
-                    size: 20,
-                    color: isPaymentActive ? activeColor : inactiveColor,
+            ),
+            // 2. Diserahkan ke Kurir (Given to Courier)
+            _StatusStep(
+              label: 'Diserahkan\\nke Kurir',
+              iconWidget: currentStatus == OrderStatus.givenToCourier
+                  ? Icon(Icons.local_shipping, size: 20, color: activeColor)
+                  : (currentStatus.index > OrderStatus.givenToCourier.index
+                        ? Icon(Icons.check_circle, size: 20, color: activeColor)
+                        : Icon(Icons.local_shipping, size: 20, color: inactiveColor)),
+              isActive: isGivenToCourierActive,
+              activeColor: activeColor,
+              inactiveColor: inactiveColor,
+            ),
+            // Line 2 -> 3
+            Expanded(
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.only(top: 18),
+                  color: isOnTheWayActive ? activeColor : inactiveColor,
+                ),
+              ),
+            ),
+            // 3. Dalam Perjalanan (On The Way)
+            _StatusStep(
+              label: 'Dalam\\nPerjalanan',
+              iconWidget: currentStatus == OrderStatus.onTheWay
+                  ? Icon(Icons.directions_bike, size: 20, color: activeColor)
+                  : (currentStatus.index > OrderStatus.onTheWay.index
+                        ? Icon(Icons.check_circle, size: 20, color: activeColor)
+                        : Icon(Icons.directions_bike, size: 20, color: inactiveColor)),
+              isActive: isOnTheWayActive,
+              activeColor: activeColor,
+              inactiveColor: inactiveColor,
+            ),
+            // Line 3 -> 4
+            Expanded(
+              child: Align(
+                alignment: Alignment.center,
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.only(top: 18),
+                  color: isArrivedActive ? activeColor : inactiveColor,
+                ),
+              ),
+            ),
+            // 4. Sampai Tujuan (Arrived)
+            _StatusStep(
+              label: 'Sampai\\nTujuan',
+              iconWidget: currentStatus == OrderStatus.arrived || isCompleted
+                  ? Icon(Icons.location_on, size: 20, color: activeColor)
+                  : Icon(Icons.location_on, size: 20, color: inactiveColor),
+              isActive: isArrivedActive,
+              activeColor: activeColor,
+              inactiveColor: inactiveColor,
+            ),
+          ],
+        ),
+        // Pesanan Selesai button - only show when status is 'arrived'
+        if (currentStatus == OrderStatus.arrived) ...[
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                // Show confirmation dialog
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Konfirmasi Penerimaan'),
+                    content: Text('Apakah Anda yakin produk "$categoryName" sudah diterima dengan baik?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Belum'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                        ),
+                        child: const Text('Ya, Sudah Diterima'),
+                      ),
+                    ],
                   ),
-            isActive: isPaymentActive,
-            activeColor: activeColor,
-            inactiveColor: inactiveColor,
-          ),
-        ),
-        // Garis 1 -> 2
-        Expanded(
-          child: Align(
-            alignment: Alignment.center,
-            child: Container(
-              height: 2,
-              margin: const EdgeInsets.only(top: 18),
-              color: isInProcessActive ? activeColor : inactiveColor,
+                );
+
+                if (confirm == true) {
+                  try {
+                    await viewModel.confirmOrderCompletion(orderId);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Pesanan telah dikonfirmasi sebagai selesai'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Gagal konfirmasi: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              icon: const Icon(Icons.check_circle_outline),
+              label: const Text('Pesanan Selesai'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ),
           ),
-        ),
-        // 2. Sedang Diproses
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ProcessStatusView(categoryName: categoryName),
-              ),
-            );
-          },
-          child: _StatusStep(
-            label: 'Sedang Diproses',
-            iconWidget: currentStatus == OrderStatus.inProcess
-                ? Icon(Icons.all_inbox_outlined, size: 20, color: activeColor)
-                : (currentStatus.index > OrderStatus.inProcess.index
-                      ? Icon(Icons.check_circle, size: 20, color: activeColor)
-                      : Icon(
-                          Icons.all_inbox_outlined,
-                          size: 20,
-                          color: inactiveColor,
-                        )),
-            isActive: isInProcessActive,
-            activeColor: activeColor,
-            inactiveColor: inactiveColor,
-          ),
-        ),
-        // Garis 2 -> 3
-        Expanded(
-          child: Align(
-            alignment: Alignment.center,
-            child: Container(
-              height: 2,
-              margin: const EdgeInsets.only(top: 18),
-              color: isShippedActive ? activeColor : inactiveColor,
+        ],
+        // Show completed badge
+        if (isCompleted) ...[
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle, color: Colors.green.shade700, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Pesanan Selesai',
+                  style: TextStyle(
+                    color: Colors.green.shade700,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        // 3. Dikirim / Sedang Dikirim
-        GestureDetector(
-          onTap: () {
-            // Navigasi ke halaman DeliveryStatusView ketika diklik
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => DeliveryStatusView(categoryName: categoryName),
-              ),
-            );
-          },
-          child: _StatusStep(
-            label: isDelivered
-                ? 'Tiba'
-                : (currentStatus == OrderStatus.shipped
-                      ? 'Sedang Dikirim'
-                      : 'Dikirim'),
-            iconWidget: isDelivered
-                ? Icon(Icons.check_circle, size: 20, color: activeColor)
-                : (currentStatus == OrderStatus.shipped
-                      ? Icon(
-                          Icons.local_shipping_outlined,
-                          size: 20,
-                          color: activeColor,
-                        )
-                      : Icon(
-                          Icons.local_shipping_outlined,
-                          size: 20,
-                          color: isShippedActive ? activeColor : inactiveColor,
-                        )),
-            isActive: isShippedActive,
-            activeColor: activeColor,
-            inactiveColor: inactiveColor,
-          ),
-        ),
+        ],
       ],
     );
   }
