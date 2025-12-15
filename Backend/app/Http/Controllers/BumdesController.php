@@ -22,11 +22,11 @@ class BumdesController extends Controller
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'idBumdes' => 'required|string|unique:bumdes,idBumDES',
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:bumdes,Email_BumDES',
-            'password' => 'required|string|min:8',
-            'phone' => 'required|string|max:20',
+            'idBumDES' => 'required|string|unique:bumdes,idBumDES',
+            'Nama_BumDES' => 'required|string|max:255',
+            'Email_BumDES' => 'required|string|email|max:255|unique:bumdes,Email_BumDES',
+            'Password_BumDES' => 'required|string|min:8',
+            'NoTelp_BumDES' => 'required|string|max:20',
         ]);
     
         if ($validator->fails()) {
