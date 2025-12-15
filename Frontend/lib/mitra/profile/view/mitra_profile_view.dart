@@ -305,7 +305,7 @@ class _MitraProfileViewState extends State<MitraProfileView> {
                             fit: BoxFit.cover,
                           )
                         : const DecorationImage(
-                            image: AssetImage('assets/images/dummy_avatar.png'),
+                            image: AssetImage('assets/images/dummy_avatar.jpg'),
                             fit: BoxFit.cover,
                           ),
                     color: AppColors.primaryLight,
@@ -332,24 +332,26 @@ class _MitraProfileViewState extends State<MitraProfileView> {
             ),
           ),
           const SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _viewModel.mitraName,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _viewModel.mitraName,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                _viewModel.mitraType,
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-              ),
-            ],
+                Text(
+                  _viewModel.mitraType,
+                  style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
           GestureDetector(
             onTap: () async {
               final nameController = TextEditingController(
@@ -562,15 +564,11 @@ class _MitraProfileViewState extends State<MitraProfileView> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.primaryLight,
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/dummy_product_icon.png'),
-                  fit: BoxFit.cover,
-                ),
                 border: Border.all(color: AppColors.border),
               ),
               child: const Icon(
                 Icons.eco,
-                color: AppColors.textLight,
+                color: AppColors.primary,
                 size: 24,
               ),
             ),

@@ -125,4 +125,53 @@ class BumdesController extends Controller
         }
     }
 
+    // Login bumdes
+    public function login(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'Email_BumDES' => 'required|string|email',
+            'Password_BumDES' => 'required|string',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        try {
+            // Find bumdes by email
+            $bumdes = Bumdes::where('Email_BumDES', $request->Email_BumDES)->first();
+            
+            if (!$bumdes) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email tidak terdaftar'
+                ], 401);
+            }
+            
+            // Verify password
+            if (!Hash::check($request->Password_BumDES, $bumdes->Password_BumDES)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password salah'
+                ], 401);
+            }
+            
+            // Login successful
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'data' => $bumdes
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Login failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

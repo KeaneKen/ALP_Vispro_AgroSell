@@ -19,6 +19,7 @@ Route::post('mitra/login', [MitraController::class, 'login']);
 Route::post('mitra/{idMitra}/upload-profile-picture', [MitraController::class, 'uploadProfilePicture']);
 
 Route::apiResource('bumdes', BumdesController::class);
+Route::post('bumdes/login', [BumdesController::class, 'login']);
 Route::post('bumdes/{idBumdes}/upload-profile-picture', [BumdesController::class, 'uploadProfilePicture']);
 
 Route::apiResource('pangan', PanganController::class);

@@ -88,17 +88,27 @@ class BumdesRepository {
   // Login bumdes
   Future<BumdesModel?> loginBumdes(String email, String password) async {
     try {
-      final allBumdes = await getAllBumdes();
+      final response = await _apiService.post(
+        '${ApiConfig.bumdes}/login',
+        body: {
+          'Email_BumDES': email,
+          'Password_BumDES': password,
+        },
+      );
       
-      for (var bumdes in allBumdes) {
-        if (bumdes.emailBumdes == email && bumdes.passwordBumdes == password) {
-          return bumdes;
-        }
+      if (response['success'] == true && response['data'] != null) {
+        return BumdesModel.fromJson(Map<String, dynamic>.from(response['data']));
       }
       
       return null;
     } catch (e) {
-      throw Exception('Failed to login: $e');
+      // If it's a 401 or 404, return null so the viewmodel can handle it
+      if (e.toString().contains('401') || e.toString().contains('404')) {
+        return null;
+      }
+      // For other errors, rethrow or return null depending on desired behavior
+      // Returning null will result in "Email or password wrong" message
+      return null;
     }
   }
 
@@ -154,6 +164,56 @@ class BumdesRepository {
         'panganCount': 0,
         'monthlyIncome': 0.0,
       };
+    }
+  }
+
+  /// Get recent activities from backend
+  Future<List<Map<String, dynamic>>> getRecentActivities() async {
+    try {
+      final response = await _apiService.get(ApiConfig.payments);
+      
+      if (response is List) {
+        return response.take(5).map((payment) {
+          final cart = payment['cart'] ?? {};
+          final pangan = cart['pangan'] ?? {};
+          final productName = pangan['namaPangan'] ?? 'Produk';
+          final totalHarga = double.tryParse(payment['Total_Harga']?.toString() ?? '0') ?? 0;
+          final dateStr = payment['created_at'];
+          
+          // Format time
+          String timeAgo = 'Baru saja';
+          if (dateStr != null) {
+            final date = DateTime.parse(dateStr);
+            final diff = DateTime.now().difference(date);
+            if (diff.inDays > 0) {
+              timeAgo = '${diff.inDays} hari lalu';
+            } else if (diff.inHours > 0) {
+              timeAgo = '${diff.inHours} jam lalu';
+            } else if (diff.inMinutes > 0) {
+              timeAgo = '${diff.inMinutes} menit lalu';
+            }
+          }
+
+          // Format currency
+          String valueStr = '';
+          if (totalHarga >= 1000000) {
+            valueStr = '+Rp ${(totalHarga / 1000000).toStringAsFixed(1)}jt';
+          } else {
+            valueStr = '+Rp ${(totalHarga / 1000).toStringAsFixed(0)}rb';
+          }
+
+          return {
+            'type': 'penjualan',
+            'title': 'Penjualan $productName',
+            'time': timeAgo,
+            'value': valueStr,
+          };
+        }).toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Error fetching recent activities: $e');
+      return [];
     }
   }
 }

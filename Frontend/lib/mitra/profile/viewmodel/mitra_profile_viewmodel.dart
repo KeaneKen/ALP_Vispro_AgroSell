@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/mitra_repository.dart';
 import '../../../core/models/mitra_model.dart';
+import '../../../core/config/api_config.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -103,7 +104,8 @@ class MitraProfileViewModel extends ChangeNotifier {
       
       // Check if profile picture exists
       if (mitra.profilePicture != null && mitra.profilePicture!.isNotEmpty) {
-        _profilePicture = 'http://localhost:8000/storage/profile_pictures/${mitra.profilePicture}';
+        final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+        _profilePicture = '$baseUrl/storage/profile_pictures/${mitra.profilePicture}';
       }
       
       // Set mitra type based on business logic or add it to the model if needed
@@ -195,8 +197,9 @@ class MitraProfileViewModel extends ChangeNotifier {
         throw Exception('User not logged in');
       }
 
-      // Create multipart request
-      final uri = Uri.parse('http://localhost:8000/api/mitra/$mitraId/upload-profile-picture');
+      // Create multipart request - use ApiConfig for correct URL
+      final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+      final uri = Uri.parse('$baseUrl/api/mitra/$mitraId/upload-profile-picture');
       final request = http.MultipartRequest('POST', uri);
       
       // Add file to request

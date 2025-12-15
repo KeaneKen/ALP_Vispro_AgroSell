@@ -14,21 +14,14 @@ class LoginViewModel with ChangeNotifier {
   bool _isLoggedIn = false;
   bool _isPasswordVisible = false;
   String? _errorMessage;
-  String _loginAs = 'mitra'; // 'mitra' or 'bumdes'
 
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _isLoggedIn;
   bool get isPasswordVisible => _isPasswordVisible;
   String? get errorMessage => _errorMessage;
-  String get loginAs => _loginAs;
 
   void togglePasswordVisibility() {
     _isPasswordVisible = !_isPasswordVisible;
-    notifyListeners();
-  }
-
-  void setLoginAs(String type) {
-    _loginAs = type;
     notifyListeners();
   }
 
@@ -44,18 +37,14 @@ class LoginViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      if (_loginAs == 'mitra') {
-        // Login as Mitra
-        final MitraModel? mitra = await _mitraRepository.loginMitra(email, password);
-        
-        if (mitra != null) {
-          await _authService.saveMitraSession(mitra);
-          _isLoggedIn = true;
-        } else {
-          _errorMessage = 'Email atau password salah';
-        }
+      // Try to login as Mitra first
+      final MitraModel? mitra = await _mitraRepository.loginMitra(email, password);
+      
+      if (mitra != null) {
+        await _authService.saveMitraSession(mitra);
+        _isLoggedIn = true;
       } else {
-        // Login as Bumdes
+        // If not Mitra, try to login as Bumdes
         final BumdesModel? bumdes = await _bumdesRepository.loginBumdes(email, password);
         
         if (bumdes != null) {

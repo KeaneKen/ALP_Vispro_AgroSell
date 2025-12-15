@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'view/chat_view.dart';
+import 'view/chat_view_v2.dart';
 
 class ChatRoute {
-  static navigate(
+  static void navigate(
     BuildContext context, {
     required String contactName,
     required String mitraId,
@@ -12,7 +12,7 @@ class ChatRoute {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ChatView(
+        builder: (_) => ChatViewV2(
           contactName: contactName,
           mitraId: mitraId,
           bumdesId: bumdesId,

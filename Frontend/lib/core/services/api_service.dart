@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 
@@ -47,8 +48,8 @@ class ApiService {
   Future<dynamic> post(String endpoint, {Map<String, dynamic>? body}) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
-      print('POST Request to: $uri');
-      print('Request body: ${body != null ? jsonEncode(body) : 'null'}');
+      debugPrint('POST Request to: $uri');
+      debugPrint('Request body: ${body != null ? jsonEncode(body) : 'null'}');
       
       final response = await http
           .post(
@@ -58,12 +59,12 @@ class ApiService {
           )
           .timeout(ApiConfig.connectTimeout);
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Response status: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
       
       return _handleResponse(response);
     } catch (e) {
-      print('POST Error: $e');
+      debugPrint('POST Error: $e');
       throw _handleError(e);
     }
   }

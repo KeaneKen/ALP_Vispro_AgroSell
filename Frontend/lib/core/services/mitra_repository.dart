@@ -1,6 +1,7 @@
 import '../models/mitra_model.dart';
 import '../services/api_service.dart';
 import '../config/api_config.dart';
+import 'package:flutter/foundation.dart';
 
 class MitraRepository {
   final ApiService _apiService = ApiService();
@@ -42,24 +43,24 @@ class MitraRepository {
   // Create new mitra (Register)
   Future<MitraModel> createMitra(MitraModel mitra) async {
     try {
-      print('MitraRepository: Creating mitra with data: ${mitra.toCreateJson()}');
+      debugPrint('MitraRepository: Creating mitra with data: ${mitra.toCreateJson()}');
       
       final response = await _apiService.post(
         ApiConfig.mitras,
         body: mitra.toCreateJson(),
       );
       
-      print('MitraRepository: Response received: $response');
+      debugPrint('MitraRepository: Response received: $response');
       
       if (response['success'] == true && response['data'] != null) {
         final createdMitra = MitraModel.fromJson(Map<String, dynamic>.from(response['data']));
-        print('MitraRepository: Mitra created with ID: ${createdMitra.idMitra}');
+        debugPrint('MitraRepository: Mitra created with ID: ${createdMitra.idMitra}');
         return createdMitra;
       }
       
       throw Exception(response['message'] ?? 'Failed to create mitra');
     } catch (e) {
-      print('MitraRepository: Error creating mitra: $e');
+      debugPrint('MitraRepository: Error creating mitra: $e');
       throw Exception('Failed to create mitra: $e');
     }
   }
@@ -108,9 +109,13 @@ class MitraRepository {
       
       return null;
     } catch (e) {
-      // Check if it's an authentication error
-      if (e.toString().contains('401')) {
-        return null; // Invalid credentials
+      // Check if it's an authentication error (401) or Not Found (404)
+      if (e is ApiException && (e.statusCode == 401 || e.statusCode == 404)) {
+        return null; // Invalid credentials or User not found
+      }
+      // Fallback for string check if exception type is lost
+      if (e.toString().contains('401') || e.toString().contains('Email tidak terdaftar')) {
+        return null;
       }
       throw Exception('Failed to login: $e');
     }

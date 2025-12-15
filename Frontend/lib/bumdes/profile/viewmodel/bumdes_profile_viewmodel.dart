@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/bumdes_repository.dart';
 import '../../../core/services/pangan_repository.dart';
+import '../../../core/models/pangan_model.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/config/api_config.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
 import 'dart:io';
@@ -27,6 +29,7 @@ class BumdesProfileViewModel with ChangeNotifier {
   String? _error;
   
   // Data harga bulanan - will be populated from database
+  List<PanganModel> _products = [];
   List<Map<String, dynamic>> _priceUpdates = [];
   List<Map<String, dynamic>> _recentActivities = [];
 
@@ -36,6 +39,7 @@ class BumdesProfileViewModel with ChangeNotifier {
   String get bumdesPhone => _bumdesPhone;
   String? get profilePicture => _profilePicture;
   int get preOrderCount => _preOrderCount;
+  List<PanganModel> get products => _products;
   int get buyNowCount => _buyNowCount;
   int get pendingDeliveryCount => _pendingDeliveryCount;
   int get totalStock => _totalStock;
@@ -68,7 +72,8 @@ class BumdesProfileViewModel with ChangeNotifier {
           
           // Check if profile picture exists
           if (bumdes.profilePicture != null && bumdes.profilePicture!.isNotEmpty) {
-            _profilePicture = 'http://localhost:8000/storage/profile_pictures/${bumdes.profilePicture}';
+            final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+            _profilePicture = '$baseUrl/storage/profile_pictures/${bumdes.profilePicture}';
           }
         } else {
           // Use default bumdes data
@@ -107,8 +112,8 @@ class BumdesProfileViewModel with ChangeNotifier {
       // Generate comprehensive price history
       await _generatePriceHistory();
 
-      // Generate recent activities
-      _generateRecentActivities();
+      // Fetch recent activities
+      await _fetchRecentActivities();
 
       debugPrint('✅ Profile data loaded: Name=$_bumdesName, PreOrders=$_preOrderCount, Stock=$_totalStock, Income=$_monthlyIncome');
     } catch (e) {
@@ -130,6 +135,7 @@ class BumdesProfileViewModel with ChangeNotifier {
     try {
       // Fetch current pangan prices
       final panganList = await _panganRepository.getAllPangan();
+      _products = panganList;
       
       if (panganList.isEmpty) {
         _generateDefaultData();
@@ -143,11 +149,11 @@ class BumdesProfileViewModel with ChangeNotifier {
       _priceUpdates = [];
       
       // Generate current month data
-      final currentPrices = panganList.take(3).map((pangan) {
+      final currentPrices = panganList.map((pangan) {
         final basePrice = pangan.hargaPangan;
         final change = _calculatePriceChange(basePrice);
         return {
-          'commodity': _simplifyPanganName(pangan.namaPangan),
+          'commodity': pangan.namaPangan,
           'price': basePrice.toInt(),
           'change': change['percentage'],
           'trend': change['trend'],
@@ -188,19 +194,6 @@ class BumdesProfileViewModel with ChangeNotifier {
     }
   }
   
-  String _simplifyPanganName(String name) {
-    // Simplify product names to commodity categories
-    final nameLower = name.toLowerCase();
-    if (nameLower.contains('padi') || nameLower.contains('beras') || nameLower.contains('gabah')) {
-      return 'Padi';
-    } else if (nameLower.contains('jagung')) {
-      return 'Jagung';
-    } else if (nameLower.contains('cabai') || nameLower.contains('cabe')) {
-      return 'Cabai';
-    }
-    return name.split(' ').first;
-  }
-  
   int _generateHistoricalPrice(int currentPrice, int monthsAgo) {
     final random = Random();
     // Generate price with 5-15% variation per month
@@ -221,35 +214,19 @@ class BumdesProfileViewModel with ChangeNotifier {
     };
   }
   
-  void _generateRecentActivities() {
-    final activities = [
-      {
-        'type': 'penjualan',
-        'title': 'Penjualan Jagung Manis',
-        'time': '2 jam lalu',
-        'value': '+Rp 2.4jt',
-      },
-      {
-        'type': 'pembelian',
-        'title': 'Pembelian Gabah Kering',
-        'time': '5 jam lalu',
-        'value': 'Rp 1.8jt',
-      },
-      {
-        'type': 'panen',
-        'title': 'Panen Cabai Merah',
-        'time': 'Kemarin',
-        'value': '250 kg',
-      },
-      {
-        'type': 'penjualan',
-        'title': 'Pre-Order Beras Premium',
-        'time': '2 hari lalu',
-        'value': '+Rp 5.2jt',
-      },
-    ];
-    
-    _recentActivities = activities;
+  Future<void> _fetchRecentActivities() async {
+    try {
+      final activities = await _bumdesRepository.getRecentActivities();
+      if (activities.isNotEmpty) {
+        _recentActivities = activities;
+      } else {
+        // Fallback if no activities found
+        _recentActivities = [];
+      }
+    } catch (e) {
+      debugPrint('Error fetching recent activities: $e');
+      _recentActivities = [];
+    }
   }
   
   void _generateDefaultData() {
@@ -275,7 +252,7 @@ class BumdesProfileViewModel with ChangeNotifier {
       },
     ];
     
-    _generateRecentActivities();
+    _recentActivities = [];
   }
 
   void refreshData() {
@@ -309,8 +286,9 @@ class BumdesProfileViewModel with ChangeNotifier {
     try {
       final bumdesId = await _authService.getBumdesId() ?? 'B001'; // Default ID
       
-      // Create multipart request
-      final uri = Uri.parse('http://localhost:8000/api/bumdes/$bumdesId/upload-profile-picture');
+      // Create multipart request - use ApiConfig for correct URL
+      final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+      final uri = Uri.parse('$baseUrl/api/bumdes/$bumdesId/upload-profile-picture');
       final request = http.MultipartRequest('POST', uri);
       
       // Add file to request

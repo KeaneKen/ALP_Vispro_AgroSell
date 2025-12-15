@@ -71,7 +71,7 @@ class DashboardViewModel extends ChangeNotifier {
         // Get image directly from database field
         String imagePath = _mapDatabaseImageToAsset(pangan.idFotoPangan, pangan.idPangan);
         
-        debugPrint('📸 Product ${pangan.idPangan}: ${pangan.namaPangan} -> Image: $imagePath');
+        // debugPrint('📸 Product ${pangan.idPangan}: ${pangan.namaPangan} -> Image: $imagePath');
         
         return {
           'id': pangan.idPangan,

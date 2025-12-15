@@ -12,10 +12,10 @@ echo ----------------------------------------
 echo Starting Laravel server...
 echo ----------------------------------------
 echo.
-echo The backend will run at: http://127.0.0.1:8000
-echo API endpoints at: http://127.0.0.1:8000/api
+echo The backend will run at: http://0.0.0.0:8000
+echo API endpoints at: http://0.0.0.0:8000/api
 echo.
 echo Press Ctrl+C to stop the server
 echo.
 
-php artisan serve
+php artisan serve --host=0.0.0.0 --port=8000

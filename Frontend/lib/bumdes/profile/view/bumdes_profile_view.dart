@@ -595,11 +595,16 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
             ],
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: (monthData['prices'] as List).map<Widget>((priceData) {
-              return _buildCompactPriceItem(priceData);
-            }).toList(),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: (monthData['prices'] as List).map<Widget>((priceData) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: _buildCompactPriceItem(priceData),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),
@@ -819,29 +824,19 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
 
   // Helper functions for price updates
   Color _getCommodityColor(String commodity) {
-    switch (commodity.toLowerCase()) {
-      case 'jagung':
-        return Colors.orange.shade600;
-      case 'padi':
-        return Colors.green.shade600;
-      case 'cabai':
-        return Colors.red.shade600;
-      default:
-        return AppColors.primary;
-    }
+    final lower = commodity.toLowerCase();
+    if (lower.contains('jagung')) return Colors.orange.shade600;
+    if (lower.contains('padi') || lower.contains('beras') || lower.contains('gabah')) return Colors.green.shade600;
+    if (lower.contains('cabai')) return Colors.red.shade600;
+    return AppColors.primary;
   }
 
   IconData _getCommodityIcon(String commodity) {
-    switch (commodity.toLowerCase()) {
-      case 'jagung':
-        return Icons.grain;
-      case 'padi':
-        return Icons.grass;
-      case 'cabai':
-        return Icons.local_fire_department;
-      default:
-        return Icons.shopping_basket;
-    }
+    final lower = commodity.toLowerCase();
+    if (lower.contains('jagung')) return Icons.grain;
+    if (lower.contains('padi') || lower.contains('beras') || lower.contains('gabah')) return Icons.grass;
+    if (lower.contains('cabai')) return Icons.local_fire_department;
+    return Icons.shopping_basket;
   }
 
   String _formatPrice(dynamic price) {

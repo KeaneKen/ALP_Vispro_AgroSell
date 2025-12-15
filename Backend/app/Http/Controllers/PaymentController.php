@@ -16,7 +16,7 @@ class PaymentController extends Controller
     public function index()
     {
         try {
-            $payments = Payment::with('mitra')->get();
+            $payments = Payment::with(['mitra', 'cart.pangan'])->orderBy('created_at', 'desc')->get();
             return response()->json([
                 'success' => true,
                 'data' => $payments

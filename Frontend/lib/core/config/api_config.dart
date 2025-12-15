@@ -3,11 +3,12 @@ class ApiConfig {
   // For Android emulator: use 10.0.2.2 to access host machine's localhost
   // For iOS simulator: use localhost or 127.0.0.1
   // For physical device: use your computer's IP address
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  // static const String baseUrl = 'http://10.0.2.2:8000/api';
+  static const String baseUrl = 'http://10.30.204.119:8000/api'; // Using physical device IP
   
   // Alternative URLs for different platforms
   static const String baseUrlIOS = 'http://localhost:8000/api';
-  static const String baseUrlPhysicalDevice = 'http://192.168.40.212:8000/api'; // Updated with your IP
+  static const String baseUrlPhysicalDevice = 'http://10.30.204.119:8000/api'; // Updated with your IP
   
   // Timeouts
   static const Duration connectTimeout = Duration(seconds: 30);

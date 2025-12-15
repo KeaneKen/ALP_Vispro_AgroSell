@@ -16,7 +16,7 @@ class MitraSeeder extends Seeder
     {
         Mitra::create([
             'idMitra' => 'M001',
-            'Nama_Mitra' => 'PT Tani Makmur - Budi Santoso',
+            'Nama_Mitra' => 'PT Sigma',
             'Email_Mitra' => 'budi@tanimakmur.com',
             'Password_Mitra' => Hash::make('password123'),
             'NoTelp_Mitra' => '081234567890',

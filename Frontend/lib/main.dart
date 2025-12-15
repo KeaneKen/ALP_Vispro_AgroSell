@@ -9,7 +9,9 @@ import 'bumdes/profile/view/bumdes_profile_view.dart';
 import 'mitra/profile/view/mitra_profile_view.dart';
 import 'splash/splash_route.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(const MyApp());
 }
 
