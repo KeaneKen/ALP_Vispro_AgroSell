@@ -20,7 +20,7 @@ class Pangan extends Model
         'Deskripsi_Pangan',
         'Harga_Pangan',
         'idFoto_Pangan',
-        'category',
+        'Kategori_Pangan',
         'created_at',
         'updated_at',
     ];
