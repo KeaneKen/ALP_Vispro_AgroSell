@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/preorder_repository.dart';
+import '../../../../core/services/auth_service.dart';
 
 class DeliveryOrder {
   final String id;
@@ -42,141 +44,108 @@ class DeliveryOrder {
 class DikirimViewModel extends ChangeNotifier {
   String _selectedStatus = 'SEMUA';
   List<DeliveryOrder> _deliveryOrders = [];
+  bool _isLoading = false;
 
   DikirimViewModel() {
     // Load initial data
     _loadDeliveryOrders();
   }
 
-  void _loadDeliveryOrders() {
-    _deliveryOrders = [
-      DeliveryOrder(
-        id: '1',
-        orderNumber: 'ORD-001',
-        buyerName: 'Catering Tukang Las',
-        productName: 'Jagung Super Sigma',
-        quantity: 50,
-        unit: 'kg',
-        totalPrice: 325000,
-        paymentStatus: 'LUNAS',
-        deliveryStatus: 'SEDANG DIKIRIM',
-        deliveryAddress: 'Jl. Industri No. 45, Kecamatan Sambikerep, Surabaya',
-        buyerPhone: '081234567890',
-        deliveryDate: '15 Nov 2023',
-        estimatedArrival: '16 Nov 2023, 14:00',
-        driverName: 'Budi Santoso',
-        driverPhone: '081298765432',
-        notes: 'Barang fragile, harap hati-hati',
-      ),
-      DeliveryOrder(
-        id: '2',
-        orderNumber: 'ORD-002',
-        buyerName: 'Resto Anak Muda',
-        productName: 'Paket Sayuran Organik',
-        quantity: 25,
-        unit: 'kg',
-        totalPrice: 750000,
-        paymentStatus: 'LUNAS',
-        deliveryStatus: 'SUDAH SAMPAI',
-        deliveryAddress: 'Jl. Pemuda No. 12, Kecamatan Wonokromo, Surabaya',
-        buyerPhone: '081234567891',
-        deliveryDate: '14 Nov 2023',
-        estimatedArrival: '14 Nov 2023, 10:30',
-        driverName: 'Ahmad Fauzi',
-        driverPhone: '081287654321',
-        notes: 'Pesanan urgent, prioritas',
-      ),
-      DeliveryOrder(
-        id: '3',
-        orderNumber: 'ORD-003',
-        buyerName: 'Toko Sembako Sejahtera',
-        productName: 'Beras Premium',
-        quantity: 100,
-        unit: 'kg',
-        totalPrice: 1200000,
-        paymentStatus: 'DP 50%',
-        deliveryStatus: 'MENUNGGU PENGIRIMAN',
-        deliveryAddress: 'Jl. Raya Darmo Permai III No. 8, Surabaya',
-        buyerPhone: '081234567892',
-        deliveryDate: '17 Nov 2023',
-        estimatedArrival: '17 Nov 2023, 16:00',
-        notes: 'Konfirmasi sebelum dikirim',
-      ),
-      DeliveryOrder(
-        id: '4',
-        orderNumber: 'ORD-004',
-        buyerName: 'Warung Makan Sederhana',
-        productName: 'Cabai Rawit Merah',
-        quantity: 10,
-        unit: 'kg',
-        totalPrice: 320000,
-        paymentStatus: 'LUNAS',
-        deliveryStatus: 'TERKENDALA',
-        deliveryAddress: 'Jl. Kenjeran No. 88, Surabaya',
-        buyerPhone: '081234567893',
-        deliveryDate: '13 Nov 2023',
-        estimatedArrival: '14 Nov 2023, 12:00',
-        driverName: 'Surya Wijaya',
-        driverPhone: '081276543210',
-        notes: 'Alamat susah ditemukan, hubungi pembeli',
-      ),
-      DeliveryOrder(
-        id: '5',
-        orderNumber: 'ORD-005',
-        buyerName: 'Cafe Kopi Tenang',
-        productName: 'Kopi Arabika',
-        quantity: 5,
-        unit: 'kg',
-        totalPrice: 450000,
-        paymentStatus: 'LUNAS',
-        deliveryStatus: 'SEDANG DIKIRIM',
-        deliveryAddress: 'Jl. Rungkut Asri No. 21, Surabaya',
-        buyerPhone: '081234567894',
-        deliveryDate: '16 Nov 2023',
-        estimatedArrival: '16 Nov 2023, 15:30',
-        driverName: 'Rudi Hartono',
-        driverPhone: '081265432198',
-      ),
-      DeliveryOrder(
-        id: '6',
-        orderNumber: 'ORD-005',
-        buyerName: 'Cafe Kopi Tenang',
-        productName: 'Kopi Arabika',
-        quantity: 5,
-        unit: 'kg',
-        totalPrice: 450000,
-        paymentStatus: 'LUNAS',
-        deliveryStatus: 'SEDANG DIKIRIM',
-        deliveryAddress: 'Jl. Rungkut Asri No. 21, Surabaya',
-        buyerPhone: '081234567894',
-        deliveryDate: '16 Nov 2023',
-        estimatedArrival: '16 Nov 2023, 15:30',
-        driverName: 'Rudi Hartono',
-        driverPhone: '081265432198',
-      ),
-      DeliveryOrder(
-        id: '7',
-        orderNumber: 'ORD-005',
-        buyerName: 'Cafe Kopi Tenang',
-        productName: 'Kopi Arabika',
-        quantity: 5,
-        unit: 'kg',
-        totalPrice: 450000,
-        paymentStatus: 'LUNAS',
-        deliveryStatus: 'SEDANG DIKIRIM',
-        deliveryAddress: 'Jl. Rungkut Asri No. 21, Surabaya',
-        buyerPhone: '081234567894',
-        deliveryDate: '16 Nov 2023',
-        estimatedArrival: '16 Nov 2023, 15:30',
-        driverName: 'Rudi Hartono',
-        driverPhone: '081265432198',
-      ),
-    ];
+  void _loadDeliveryOrders() async {
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      final authService = AuthService();
+      final userId = await authService.getUserId();
+
+      if (userId == null) {
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      final preorderRepository = PreOrderRepository();
+      final preOrders = await preorderRepository.getAllPreOrders(idBumDES: userId);
+
+      // Transform PreOrders to DeliveryOrders
+      _deliveryOrders = preOrders.map((po) {
+        // Extract product details from first item if available
+        String productName = '';
+        int quantity = 0;
+        String unit = '';
+
+        if (po['items'] != null && (po['items'] as List).isNotEmpty) {
+          final firstItem = po['items'][0];
+          productName = firstItem['idPangan'] ?? '';
+          quantity = int.tryParse(firstItem['quantity']?.toString() ?? '0') ?? 0;
+          unit = 'Kg'; // Default unit
+        }
+
+        return DeliveryOrder(
+          id: po['idPreOrder']?.toString() ?? '',
+          orderNumber: 'PO-${po['idPreOrder']}',
+          buyerName: po['idMitra'] ?? 'Mitra',
+          productName: productName.isNotEmpty ? productName : 'Produk',
+          quantity: quantity.toDouble(),
+          unit: unit,
+          totalPrice: double.tryParse(po['total_amount']?.toString() ?? '0') ?? 0.0,
+          paymentStatus: _mapPaymentStatus(po['payment_status']),
+          deliveryStatus: _mapDeliveryStatus(po['status']),
+          deliveryAddress: 'Alamat dari Mitra',
+          buyerPhone: '0812-3456-7890',
+          deliveryDate: po['delivery_date']?.toString() ?? '',
+          estimatedArrival: po['delivery_date']?.toString() ?? '',
+          driverName: '',
+          driverPhone: '',
+          notes: po['notes'] ?? '',
+        );
+      }).toList();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print('Error loading delivery orders: $e');
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  String _mapPaymentStatus(String? status) {
+    if (status == null) return 'PENDING';
+    switch (status.toUpperCase()) {
+      case 'COMPLETED':
+        return 'LUNAS';
+      case 'PENDING':
+        return 'BELUM LUNAS';
+      case 'PARTIAL':
+        return 'DP 50%';
+      default:
+        return status;
+    }
+  }
+
+  String _mapDeliveryStatus(String? status) {
+    if (status == null) return 'MENUNGGU PENGIRIMAN';
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return 'MENUNGGU PENGIRIMAN';
+      case 'CONFIRMED':
+        return 'MENUNGGU PENGIRIMAN';
+      case 'SHIPPED':
+        return 'SEDANG DIKIRIM';
+      case 'DELIVERED':
+        return 'SUDAH SAMPAI';
+      case 'CANCELLED':
+        return 'BATAL';
+      default:
+        return status;
+    }
   }
 
   List<DeliveryOrder> get deliveryOrders => _deliveryOrders;
   String get selectedStatus => _selectedStatus;
+  bool get isLoading => _isLoading;
 
   List<String> get statusFilters => ['SEMUA', 'SEDANG DIKIRIM', 'SUDAH SAMPAI', 'MENUNGGU', 'TERKENDALA'];
 

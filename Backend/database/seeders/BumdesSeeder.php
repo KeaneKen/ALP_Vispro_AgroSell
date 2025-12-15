@@ -16,10 +16,10 @@ class BumdesSeeder extends Seeder
     {
         Bumdes::create([
             'idBumDES' => 'B001',
-            'Nama_BumDES' => 'BumDes Sejahtera Desa',
-            'Email_BumDES' => 'admin@bumdessejahtera.com',
+            'Nama_BumDES' => 'BumDes Sengka',
+            'Email_BumDES' => 'bumdes@sengka.com',
             'Password_BumDES' => Hash::make('password123'),
-            'NoTelp_BumDES' => '081234567891',
+            'NoTelp_BumDES' => '02673456789',
         ]);
     }
 }

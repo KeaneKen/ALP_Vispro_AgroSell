@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'pre_order_model.dart';
+import '../../../core/services/preorder_repository.dart';
 
 class ListPOViewModel extends ChangeNotifier {
+  final PreOrderRepository _repository = PreOrderRepository();
   List<PreOrderModel> _poList = [];
   bool _isLoading = false;
   String _filterStatus = 'all';
@@ -15,36 +17,30 @@ class ListPOViewModel extends ChangeNotifier {
     return _poList.where((po) => po.status == _filterStatus).toList();
   }
 
-  Future<void> fetchPOList() async {
+  Future<void> fetchPOList({String? idMitra}) async {
     _isLoading = true;
     notifyListeners();
 
-    await Future.delayed(const Duration(seconds: 1));
-
-    _poList = [
-      PreOrderModel(
-        id: 'PO-001',
-        supplierName: 'Supplier A',
-        orderDate: DateTime(2024, 1, 15),
-        deliveryDate: DateTime(2024, 1, 25),
-        totalAmount: 5000000,
-        status: 'approved',
-        items: [
-          POItem(productName: 'Product A', quantity: 100, price: 20000, unit: 'pcs'),
-        ],
-      ),
-      PreOrderModel(
-        id: 'PO-002',
-        supplierName: 'Supplier B',
-        orderDate: DateTime(2024, 1, 14),
-        deliveryDate: DateTime(2024, 1, 24),
-        totalAmount: 7500000,
-        status: 'pending',
-        items: [
-          POItem(productName: 'Product B', quantity: 50, price: 150000, unit: 'pcs'),
-        ],
-      ),
-    ];
+    try {
+      final data = await _repository.getAllPreOrders(idMitra: idMitra);
+      _poList = data.map((json) => PreOrderModel(
+        id: json['id'] ?? '',
+        supplierName: json['supplierName'] ?? 'Unknown',
+        orderDate: DateTime.parse(json['orderDate']),
+        deliveryDate: json['deliveryDate'] != null ? DateTime.parse(json['deliveryDate']) : DateTime.now(),
+        totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+        status: json['status'] ?? 'pending',
+        items: (json['items'] as List? ?? []).map((item) => POItem(
+          productName: item['productName'] ?? '',
+          quantity: item['quantity'] ?? 0,
+          price: (item['price'] as num?)?.toDouble() ?? 0.0,
+          unit: item['unit'] ?? 'pcs',
+        )).toList(),
+      )).toList();
+    } catch (e) {
+      debugPrint('❌ Error fetching PO list: $e');
+      _poList = [];
+    }
 
     _isLoading = false;
     notifyListeners();

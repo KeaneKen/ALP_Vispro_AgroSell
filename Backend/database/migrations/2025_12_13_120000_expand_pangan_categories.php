@@ -9,12 +9,14 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * Expands the category to support all frontend categories
+     * Expands the category to support all frontend categories (MySQL only)
      */
     public function up(): void
     {
-        // Simply run raw SQL to modify the enum - this works without doctrine/dbal
-        DB::statement("ALTER TABLE pangan MODIFY COLUMN category VARCHAR(50) DEFAULT 'Lainnya'");
+        // Only run for MySQL - skip for SQLite
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE pangan MODIFY COLUMN category VARCHAR(50) DEFAULT 'Lainnya'");
+        }
     }
 
     /**
@@ -22,6 +24,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE pangan MODIFY COLUMN category VARCHAR(50) DEFAULT 'Lainnya'");
+        // Only run for MySQL - skip for SQLite
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE pangan MODIFY COLUMN category VARCHAR(50) DEFAULT 'Lainnya'");
+        }
     }
 };

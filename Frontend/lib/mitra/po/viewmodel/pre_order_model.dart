@@ -19,12 +19,14 @@ class PreOrderModel {
 }
 
 class POItem {
+  final String? productId; // ID of the product (idPangan)
   final String productName;
   final int quantity;
   final double price;
   final String unit;
 
   POItem({
+    this.productId,
     required this.productName,
     required this.quantity,
     required this.price,

@@ -22,6 +22,23 @@ class RiwayatRepository {
     }
   }
 
+  /// Get riwayat for a specific Mitra by Mitra ID (uses backend filter)
+  Future<List<RiwayatModel>> getRiwayatByMitra(String mitraId) async {
+    try {
+      final endpoint = '${ApiConfig.riwayat}/mitra/$mitraId';
+      final response = await _apiService.get(endpoint);
+
+      if (response['success'] == true && response['data'] != null) {
+        final data = response['data'] as List;
+        return data.map((json) => RiwayatModel.fromJson(json)).toList();
+      }
+
+      throw Exception('Invalid response when fetching riwayat by mitra');
+    } catch (e) {
+      throw Exception('Failed to fetch riwayat by mitra: $e');
+    }
+  }
+
   /// Get riwayat by ID
   Future<RiwayatModel> getRiwayatById(String id) async {
     try {

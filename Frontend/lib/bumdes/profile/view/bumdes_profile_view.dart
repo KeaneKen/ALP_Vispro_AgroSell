@@ -1,4 +1,3 @@
-import 'package:agrosell/bumdes/profile/list_nonPO/view/list_nonPO_view.dart';
 import 'package:flutter/material.dart';
 import '../viewmodel/bumdes_profile_viewmodel.dart';
 import '../../../core/theme/app_colors.dart';
@@ -28,6 +27,13 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
 
   void _onViewModelChange() {
     setState(() {});
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh stats when returning from other screens
+    _viewModel.refreshData();
   }
 
   @override
@@ -244,15 +250,6 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
               ],
             ),
           ),
-          IconButton(
-            onPressed: () {
-              // Edit profile action
-            },
-            icon: Icon(
-              Icons.edit,
-              color: AppColors.primary,
-            ),
-          ),
         ],
       ),
     );
@@ -278,20 +275,9 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
 
           const SizedBox(width: 12),
 
-          Expanded(
-            child: _buildStatCard(
-              count: _viewModel.buyNowCount,
-              label: 'Beli Sekarang',
-              icon: Icons.shopping_cart,
-              color: AppColors.primary,
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ListNonPOView()),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 12),
+          // "Beli Sekarang" (Buy Now) card - Removed for BumDes, they don't buy products
+          // This was previously used to show non-PreOrder purchases
+          // BumDes are suppliers, not buyers
 
           Expanded(
             child: _buildStatCard(

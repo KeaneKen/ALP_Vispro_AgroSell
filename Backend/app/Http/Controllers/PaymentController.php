@@ -66,16 +66,12 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        try {
             // Create payment record
             $payment = Payment::create([
                 'idPayment' => $this->generatePaymentId(),
-                'idMitra' => $request->user()->idMitra ?? null,
-                'amount' => $request->amount,
-                'payment_method' => $request->payment_method,
-                'payment_details' => json_encode($request->payment_details ?? []),
-                'status' => 'processing',
-                'transaction_id' => 'TXN-' . Str::upper(Str::random(12)),
-                'paid_at' => now(),
+                'idCart' => $request->idCart,
+                'Total_Harga' => $request->Total_Harga,
             ]);
 
             return response()->json([
@@ -83,8 +79,14 @@ class PaymentController extends Controller
                 'message' => 'Payment processed successfully',
                 'data' => $payment
             ], 201);
-
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create payment',
+                'error' => $e->getMessage()
+            ], 500);
         }
+    }
 
 
     

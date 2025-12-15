@@ -149,10 +149,16 @@ class MitraProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fetch order history from backend
+  /// Fetch order history from backend (filtered by current Mitra)
   Future<void> _fetchOrderHistory() async {
     try {
-      final riwayatList = await _riwayatRepository.getOrderHistory();
+      final mitraId = await _authService.getMitraId();
+      if (mitraId == null || mitraId.isEmpty) {
+        throw Exception('Mitra ID not available');
+      }
+
+      // Use per-mitra endpoint to ensure only this Mitra's orders are shown
+      final riwayatList = await _riwayatRepository.getRiwayatByMitra(mitraId);
       
       _orders = riwayatList.map((riwayat) {
         // Map backend status to OrderStatus enum

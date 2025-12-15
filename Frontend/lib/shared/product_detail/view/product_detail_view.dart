@@ -22,6 +22,8 @@ class _ProductDetailViewState extends State<ProductDetailView> {
   final ProductDetailViewModel _viewModel = ProductDetailViewModel();
   final AuthService _authService = AuthService();
   final BumdesRepository _bumdesRepository = BumdesRepository();
+  String _userType = 'mitra'; // Default to mitra
+  bool _isUserTypeResolved = false;
 
   @override
   void initState() {
@@ -33,6 +35,17 @@ class _ProductDetailViewState extends State<ProductDetailView> {
     debugPrint('🔍 Product price: ${widget.product['price']}');
     debugPrint('🔍 Product image: ${widget.product['image']}');
     _viewModel.setProduct(widget.product);
+    
+    // Get user type to hide cart for BumDes
+    _getUserType();
+  }
+
+  Future<void> _getUserType() async {
+    final userType = await _authService.getUserType();
+    setState(() {
+      _userType = userType ?? 'mitra';
+      _isUserTypeResolved = true;
+    });
   }
 
   @override
@@ -172,7 +185,8 @@ class _ProductDetailViewState extends State<ProductDetailView> {
 
                       const Divider(color: AppColors.divider, thickness: 8),
 
-                      // Quantity Selector Section
+                      // Quantity Selector Section - hidden for BumDes or until user type resolved
+                      if (_isUserTypeResolved && _userType != 'bumdes')
                       Padding(
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -285,27 +299,29 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                   ),
                 ),
               ),
-              Positioned(
-                top: 40,
-                right: 16,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.primary),
-                    onPressed: () => CartRoute.navigate(context),
+              // Cart button - only show for Mitra users, hide for BumDes, and wait until user type resolved
+              if (_isUserTypeResolved && _userType != 'bumdes')
+                Positioned(
+                  top: 40,
+                  right: 16,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.primary),
+                      onPressed: () => CartRoute.navigate(context),
+                    ),
                   ),
                 ),
-              ),
             ],
           );
         },
@@ -373,94 +389,95 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                     ),
                   ),
 
-                  const SizedBox(width: 12),
-
-                  // Add to Cart / Pre-Order Button
-                  Expanded(
-                    child: _viewModel.product!['isPreOrder'] == 'true'
-                        ? ElevatedButton.icon(
-                            onPressed: _viewModel.isLoading
-                                ? null
-                                : () async {
-                                    await _viewModel.addToCart();
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Pre-order berhasil ditambahkan ke keranjang'),
-                                          backgroundColor: AppColors.success,
-                                          duration: Duration(seconds: 2),
+                  // Add to Cart / Pre-Order Button - Only show for Mitra users and after user type resolved
+                  if (_isUserTypeResolved && _userType != 'bumdes') ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _viewModel.product!['isPreOrder'] == 'true'
+                          ? ElevatedButton.icon(
+                              onPressed: _viewModel.isLoading
+                                  ? null
+                                  : () async {
+                                      await _viewModel.addToCart();
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Pre-order berhasil ditambahkan ke keranjang'),
+                                            backgroundColor: AppColors.success,
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
+                                    },
+                              icon: _viewModel.isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
                                         ),
-                                      );
-                                    }
-                                  },
-                            icon: _viewModel.isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
                                       ),
-                                    ),
-                                  )
-                                : const Icon(Icons.event_available),
-                            label: Text(
-                              _viewModel.isLoading
-                                  ? 'Memproses...'
-                                  : 'Pre-Order Sekarang',
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.secondary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                    )
+                                  : const Icon(Icons.event_available),
+                              label: Text(
+                                _viewModel.isLoading
+                                    ? 'Memproses...'
+                                    : 'Pre-Order Sekarang',
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.secondary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            )
+                          : ElevatedButton.icon(
+                              onPressed: _viewModel.isLoading
+                                  ? null
+                                  : () async {
+                                      await _viewModel.addToCart();
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Produk ditambahkan ke keranjang'),
+                                            backgroundColor: AppColors.success,
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
+                                    },
+                              icon: _viewModel.isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : const Icon(Icons.shopping_cart),
+                              label: Text(
+                                _viewModel.isLoading
+                                    ? 'Menambahkan...'
+                                    : 'Tambah ke Keranjang',
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.secondary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
-                          )
-                        : ElevatedButton.icon(
-                            onPressed: _viewModel.isLoading
-                                ? null
-                                : () async {
-                                    await _viewModel.addToCart();
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Produk ditambahkan ke keranjang'),
-                                          backgroundColor: AppColors.success,
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                    }
-                                  },
-                            icon: _viewModel.isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : const Icon(Icons.shopping_cart),
-                            label: Text(
-                              _viewModel.isLoading
-                                  ? 'Menambahkan...'
-                                  : 'Tambah ke Keranjang',
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.secondary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                  ),
+                    ),
+                  ],
                 ],
               ),
             ),

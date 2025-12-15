@@ -16,10 +16,26 @@ class MitraSeeder extends Seeder
     {
         Mitra::create([
             'idMitra' => 'M001',
-            'Nama_Mitra' => 'PT Sigma',
+            'Nama_Mitra' => 'Budi Tani Makmur',
             'Email_Mitra' => 'budi@tanimakmur.com',
             'Password_Mitra' => Hash::make('password123'),
-            'NoTelp_Mitra' => '081234567890',
+            'NoTelp_Mitra' => '08123456789',
+        ]);
+
+        Mitra::create([
+            'idMitra' => 'M002',
+            'Nama_Mitra' => 'Siti Pertanian',
+            'Email_Mitra' => 'siti@pertanian.com',
+            'Password_Mitra' => Hash::make('password123'),
+            'NoTelp_Mitra' => '08234567890',
+        ]);
+
+        Mitra::create([
+            'idMitra' => 'M003',
+            'Nama_Mitra' => 'Ahmad Petani Hebat',
+            'Email_Mitra' => 'ahmad@petani.com',
+            'Password_Mitra' => Hash::make('password123'),
+            'NoTelp_Mitra' => '08345678901',
         ]);
     }
 }

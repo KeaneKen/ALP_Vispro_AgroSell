@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/preorder_repository.dart';
 
 class ListPoViewModel with ChangeNotifier {
+  final PreOrderRepository _repository = PreOrderRepository();
   bool _isLoading = true;
   List<Map<String, dynamic>> _preOrders = [];
 
@@ -11,16 +13,12 @@ class ListPoViewModel with ChangeNotifier {
     loadPreOrders();
   }
 
-  Future<void> loadPreOrders() async {
+  Future<void> loadPreOrders({String? idBumDES}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // TODO: Fetch pre-orders from backend API
-      // await _preOrderRepository.getAllPreOrders();
-      await Future.delayed(const Duration(milliseconds: 500));
-      _preOrders = [];
-      
+      _preOrders = await _repository.getAllPreOrders(idBumDES: idBumDES);
       debugPrint('📦 Pre-orders loaded: ${_preOrders.length} items');
     } catch (e) {
       debugPrint('❌ Error loading pre-orders: $e');

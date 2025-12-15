@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'pre_order_model.dart';
+import '../../../core/services/preorder_repository.dart';
+import '../../../core/services/auth_service.dart';
 
 class FormPOViewModel extends ChangeNotifier {
+  final AuthService _authService = AuthService();
   final List<POItem> _items = [];
   String _supplierName = '';
   DateTime _orderDate = DateTime.now();
@@ -53,14 +56,35 @@ class FormPOViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Submit PO to backend API
-      // await _preOrderRepository.createPreOrder(...)
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Get logged-in user IDs
+      final mitraId = await _authService.getMitraId();
+      final userType = await _authService.getUserType();
       
-      debugPrint('📤 PO submitted: $_supplierName, ${_items.length} items');
+      // Default to test IDs if not logged in
+      final effectiveMitraId = mitraId ?? 'M001';
+      final effectiveBumdesId = userType == 'bumdes' 
+          ? await _authService.getBumdesId() ?? 'B001' 
+          : 'B001';
+      
+      final repository = PreOrderRepository();
+      final result = await repository.createPreOrder({
+        'idMitra': effectiveMitraId,
+        'idBumDES': effectiveBumdesId,
+        'order_date': _orderDate.toIso8601String(),
+        'delivery_date': _deliveryDate.toIso8601String(),
+        'total_amount': _items.fold(0.0, (sum, item) => sum + (item.price * item.quantity)),
+        'notes': '',
+        'items': _items.map((item) => {
+          'idPangan': item.productId ?? 'P001', // Use actual product ID from item
+          'quantity': item.quantity,
+          'price': item.price,
+        }).toList(),
+      });
+      
+      debugPrint('📤 PO submitted: $_supplierName, ${_items.length} items, result: $result');
       _isLoading = false;
       notifyListeners();
-      return true;
+      return result != null;
     } catch (e) {
       debugPrint('❌ Error submitting PO: $e');
       _isLoading = false;
@@ -74,14 +98,17 @@ class FormPOViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Update PO in backend API
-      // await _preOrderRepository.updatePreOrder(po.id, ...)
-      await Future.delayed(const Duration(milliseconds: 500));
+      final repository = PreOrderRepository();
+      final result = await repository.updatePreOrder(po.id, {
+        'delivery_date': _deliveryDate.toIso8601String(),
+        'status': 'pending',
+        'notes': '',
+      });
       
-      debugPrint('📤 PO updated: ${po.id}');
+      debugPrint('📤 PO updated: ${po.id}, result: $result');
       _isLoading = false;
       notifyListeners();
-      return true;
+      return result;
     } catch (e) {
       debugPrint('❌ Error updating PO: $e');
       _isLoading = false;

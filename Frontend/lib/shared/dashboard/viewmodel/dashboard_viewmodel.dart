@@ -1,11 +1,13 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/services/pangan_repository.dart';
+import '../../../core/services/metrics_repository.dart';
 import '../../../core/models/pangan_model.dart';
 import '../../../core/config/api_config.dart';
 import 'package:intl/intl.dart';
 
 class DashboardViewModel extends ChangeNotifier {
   final PanganRepository _panganRepository = PanganRepository();
+  final MetricsRepository _metricsRepository = MetricsRepository();
   
   List<Map<String, String>> _products = [];
   List<PanganModel> _panganList = [];
@@ -106,6 +108,17 @@ class DashboardViewModel extends ChangeNotifier {
       // No fallback - only database data
       _products = [];
       _panganList = [];
+    }
+
+    // Optionally fetch metrics from backend
+    try {
+      final metrics = await _metricsRepository.getDashboardMetrics();
+      if (metrics != null) {
+        debugPrint('📊 Backend metrics: $metrics');
+        // Could merge or replace local stats with backend metrics if needed
+      }
+    } catch (e) {
+      debugPrint('⚠️ Metrics fetch failed, using local stats: $e');
     }
 
     _isLoading = false;

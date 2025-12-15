@@ -1,5 +1,6 @@
 import '../models/bumdes_model.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../config/api_config.dart';
 import 'package:flutter/foundation.dart';
 
@@ -117,39 +118,65 @@ class BumdesRepository {
     try {
       debugPrint('📊 Fetching profile stats from backend...');
       
-      // Get cart count (pre-orders)
-      final cartResponse = await _apiService.get(ApiConfig.cart);
-      final cartCount = cartResponse is List ? cartResponse.length : 0;
-
-      // Get pangan count (total stock items)
-      final panganResponse = await _apiService.get(ApiConfig.pangans);
-      final panganCount = panganResponse is List ? panganResponse.length : 0;
-
-      // Get payment count
-      final paymentResponse = await _apiService.get(ApiConfig.payments);
-      final paymentCount = paymentResponse is List ? paymentResponse.length : 0;
-
-      // Calculate total stock (sum of all pangan items)
-      int totalStock = 0;
-      if (panganResponse is List) {
-        // Placeholder calculation - each item adds 100 to stock
-        totalStock = panganResponse.length * 100; // Adjust based on actual stock field
+      // Get the current BumDes ID
+      final authService = AuthService();
+      final bumdesId = await authService.getBumdesId();
+      
+      if (bumdesId == null) {
+        debugPrint('❌ No BumDes ID found');
+        return {
+          'preOrderCount': 0,
+          'buyNowCount': 0,
+          'pendingDeliveryCount': 0,
+          'totalStock': 0,
+          'panganCount': 0,
+          'monthlyIncome': 0.0,
+        };
       }
 
-      // Calculate monthly income from payments
+      // Fetch PreOrders for this BumDes
+      final preOrderResponse = await _apiService.get(
+        '${ApiConfig.preorders}?idBumDES=$bumdesId'
+      );
+      
+      List<Map<String, dynamic>> preOrders = [];
+      if (preOrderResponse is Map && preOrderResponse['success'] == true && preOrderResponse['data'] is List) {
+        preOrders = List<Map<String, dynamic>>.from(preOrderResponse['data']);
+      } else if (preOrderResponse is List) {
+        preOrders = List<Map<String, dynamic>>.from(preOrderResponse);
+      }
+
+      // Count PreOrders (all pending/approved ones)
+      final preOrderCount = preOrders.length;
+      
+      // Count pending deliveries (approved status but not yet shipped)
+      final pendingDeliveryCount = preOrders
+          .where((po) => po['status'] != 'cancelled' && po['status'] != 'delivered')
+          .length;
+
+      // For now, buyNowCount is 0 (until we have a separate non-PreOrder table)
+      final buyNowCount = 0;
+
+      // Calculate total stock from pangan
+      final panganResponse = await _apiService.get(ApiConfig.pangans);
+      final panganCount = panganResponse is List ? panganResponse.length : 0;
+      int totalStock = panganCount * 100; // Placeholder
+
+      // Calculate monthly income from pre-orders with paid status
       double monthlyIncome = 0;
-      if (paymentResponse is List) {
-        for (var payment in paymentResponse) {
-          monthlyIncome += double.tryParse(payment['Total_Pembayaran']?.toString() ?? '0') ?? 0;
+      for (var po in preOrders) {
+        final totalAmount = double.tryParse(po['total_amount']?.toString() ?? '0') ?? 0;
+        if (po['payment_status'] == 'paid' || po['payment_status'] == 'dp') {
+          monthlyIncome += totalAmount;
         }
       }
 
-      debugPrint('✅ Profile stats loaded: Cart=$cartCount, Pangan=$panganCount, Payments=$paymentCount');
+      debugPrint('✅ Profile stats loaded: PreOrders=$preOrderCount, PendingDelivery=$pendingDeliveryCount, BuyNow=$buyNowCount, Income=$monthlyIncome');
 
       return {
-        'preOrderCount': cartCount,
-        'buyNowCount': paymentCount,
-        'pendingDeliveryCount': paymentCount,
+        'preOrderCount': preOrderCount,
+        'buyNowCount': buyNowCount,
+        'pendingDeliveryCount': pendingDeliveryCount,
         'totalStock': totalStock,
         'panganCount': panganCount,
         'monthlyIncome': monthlyIncome,

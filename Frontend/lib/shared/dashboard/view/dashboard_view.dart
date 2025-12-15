@@ -5,6 +5,7 @@ import '../viewmodel/dashboard_viewmodel.dart';
 import '../../product_detail/product_detail_route.dart';
 import '../../cart/cart_route.dart';
 import '../../chat_list/chat_list_route.dart';
+import '../../../core/services/auth_service.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -15,11 +16,23 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   late DashboardViewModel _viewModel;
+  final AuthService _authService = AuthService();
+  String _userType = 'mitra';
+  bool _isUserTypeResolved = false;
 
   @override
   void initState() {
     super.initState();
     _viewModel = DashboardViewModel();
+    _resolveUserType();
+  }
+
+  Future<void> _resolveUserType() async {
+    final userType = await _authService.getUserType();
+    setState(() {
+      _userType = userType ?? 'mitra';
+      _isUserTypeResolved = true;
+    });
   }
 
   @override
@@ -94,32 +107,33 @@ class _DashboardViewState extends State<DashboardView> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Icon Keranjang
-                  GestureDetector(
-                    onTap: () {
-                      CartRoute.navigate(context);
-                    },
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.shopping_cart_outlined,
-                        color: AppColors.primary,
-                        size: 24,
+                  // Icon Keranjang - only for Mitra, hide for BumDes
+                  if (_isUserTypeResolved && _userType != 'bumdes')
+                    GestureDetector(
+                      onTap: () {
+                        CartRoute.navigate(context);
+                      },
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.shopping_cart_outlined,
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

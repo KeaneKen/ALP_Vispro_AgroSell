@@ -70,7 +70,10 @@ class _NotificationViewState extends State<NotificationView> {
           // Handle other notification types if needed
           final route = notification.actionData!['route'];
           if (route == 'cart') {
-            CartRoute.navigate(context);
+            final userType = await _authService.getUserType();
+            if (userType != 'bumdes') {
+              CartRoute.navigate(context);
+            }
           }
           break;
       }
