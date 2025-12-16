@@ -33,12 +33,40 @@ class PanganController extends Controller
         return 'P' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 
+    // Auto-detect category from product name
+    private function detectCategory($namaPangan) {
+        $name = strtolower($namaPangan);
+        
+        if (str_contains($name, 'padi') || str_contains($name, 'beras') || str_contains($name, 'gabah')) {
+            return 'Padi';
+        } elseif (str_contains($name, 'jagung') || str_contains($name, 'corn')) {
+            return 'Jagung';
+        } elseif (str_contains($name, 'cabai') || str_contains($name, 'cabe') || str_contains($name, 'chili')) {
+            return 'Cabai';
+        } elseif (str_contains($name, 'sayur') || str_contains($name, 'kangkung') || str_contains($name, 'bayam') || 
+                 str_contains($name, 'sawi') || str_contains($name, 'wortel') || str_contains($name, 'tomat') ||
+                 str_contains($name, 'terong') || str_contains($name, 'kubis') || str_contains($name, 'kol') ||
+                 str_contains($name, 'brokoli') || str_contains($name, 'selada') || str_contains($name, 'timun') ||
+                 str_contains($name, 'labu') || str_contains($name, 'buncis') || str_contains($name, 'kacang panjang')) {
+            return 'Sayuran';
+        } elseif (str_contains($name, 'buah') || str_contains($name, 'apel') || str_contains($name, 'jeruk') ||
+                 str_contains($name, 'mangga') || str_contains($name, 'pisang') || str_contains($name, 'pepaya') ||
+                 str_contains($name, 'semangka') || str_contains($name, 'melon') || str_contains($name, 'anggur') ||
+                 str_contains($name, 'durian') || str_contains($name, 'rambutan') || str_contains($name, 'salak') ||
+                 str_contains($name, 'manggis') || str_contains($name, 'nanas') || str_contains($name, 'alpukat')) {
+            return 'Buah';
+        }
+        
+        return 'Lainnya';
+    }
+
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'Nama_Pangan' => 'required|string|max:255',
             'Deskripsi_Pangan' => 'required|string|max:255',
             'Harga_Pangan' => 'required|numeric',
             'idFoto_Pangan' => 'required|string|max:255',
+            'category' => 'nullable|in:Padi,Jagung,Cabai,Sayuran,Buah,Lainnya',
         ]);
     
         if ($validator->fails()) {
@@ -50,12 +78,16 @@ class PanganController extends Controller
         }
 
         try {
+            // Auto-detect category if not provided
+            $category = $request->category ?? $this->detectCategory($request->Nama_Pangan);
+            
             $pangan = Pangan::create([
                 'idPangan' => $this->generatePanganId(),
                 'Nama_Pangan' => $request->Nama_Pangan,
                 'Deskripsi_Pangan' => $request->Deskripsi_Pangan,
                 'Harga_Pangan' => $request->Harga_Pangan,
                 'idFoto_Pangan' => $request->idFoto_Pangan,
+                'category' => $category,
             ]);
 
         return response()->json([
@@ -78,6 +110,7 @@ class PanganController extends Controller
             'Deskripsi_Pangan' => 'string|max:255', 
             'Harga_Pangan' => 'numeric',
             'idFoto_Pangan' => 'string|max:255',
+            'category' => 'nullable|in:Padi,Jagung,Cabai,Sayuran,Buah,Lainnya',
         ]);
 
         if ($validator->fails()) {
@@ -91,13 +124,21 @@ class PanganController extends Controller
         try {
             $pangan = Pangan::findOrFail($idPangan);
             
-            // Update only provided fields, idPangan stays the same
-            $pangan->update($request->only([
+            // Auto-detect category if name is being updated and category is not provided
+            $updateData = $request->only([
                 'Nama_Pangan', 
                 'Deskripsi_Pangan', 
                 'Harga_Pangan', 
-                'idFoto_Pangan'
-            ]));
+                'idFoto_Pangan',
+                'category'
+            ]);
+            
+            if (isset($updateData['Nama_Pangan']) && !isset($updateData['category'])) {
+                $updateData['category'] = $this->detectCategory($updateData['Nama_Pangan']);
+            }
+            
+            // Update only provided fields, idPangan stays the same
+            $pangan->update($updateData);
 
             return response()->json([
                 'success' => true,

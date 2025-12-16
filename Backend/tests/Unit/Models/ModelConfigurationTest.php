@@ -5,7 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\Cart;
 use App\Models\Pangan;
 use App\Models\Payment;
-use App\Models\Perusahaan;
+// use App\Models\Perusahaan;
 use App\Models\Riwayat;
 use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -48,32 +48,33 @@ class ModelConfigurationTest extends TestCase
         EloquentModel::setEventDispatcher(new Dispatcher(new Container()));
     }
 
-    public function test_perusahaan_configuration(): void
-    {
-        $model = new Perusahaan();
+    // Commented out as Perusahaan model doesn't exist
+    // public function test_perusahaan_configuration(): void
+    // {
+    //     $model = new Perusahaan();
 
-        $this->assertSame('perusahaan', $model->getTable());
-        $this->assertSame('idPerusahaan', $model->getKeyName());
-        $this->assertFalse($model->getIncrementing());
-        $this->assertSame('string', $model->getKeyType());
-        $this->assertSame([
-            'idPerusahaan',
-            'Nama_Perusahaan',
-            'Email_Perusahaan',
-            'Password_Perusahaan',
-            'Alamat_Perusahaan',
-            'NoTelp_Perusahaan',
-            'created_at',
-            'updated_at',
-        ], $model->getFillable());
-    }
+    //     $this->assertSame('perusahaan', $model->getTable());
+    //     $this->assertSame('idPerusahaan', $model->getKeyName());
+    //     $this->assertFalse($model->getIncrementing());
+    //     $this->assertSame('string', $model->getKeyType());
+    //     $this->assertSame([
+    //         'idPerusahaan',
+    //         'Nama_Perusahaan',
+    //         'Email_Perusahaan',
+    //         'Password_Perusahaan',
+    //         'Alamat_Perusahaan',
+    //         'NoTelp_Perusahaan',
+    //         'created_at',
+    //         'updated_at',
+    //     ], $model->getFillable());
+    // }
 
-    public function test_perusahaan_has_many_mitra(): void
-    {
-        $relation = (new Perusahaan())->mitra();
+    // public function test_perusahaan_has_many_mitra(): void
+    // {
+    //     $relation = (new Perusahaan())->mitra();
 
-        $this->assertInstanceOf(HasMany::class, $relation);
-    }
+    //     $this->assertInstanceOf(HasMany::class, $relation);
+    // }
 
     public function test_pangan_configuration(): void
     {
@@ -85,11 +86,11 @@ class ModelConfigurationTest extends TestCase
         $this->assertSame('string', $model->getKeyType());
         $this->assertSame([
             'idPangan',
-            'idMitra',
             'Nama_Pangan',
             'Deskripsi_Pangan',
             'Harga_Pangan',
             'idFoto_Pangan',
+            'category',
             'created_at',
             'updated_at',
         ], $model->getFillable());
@@ -100,7 +101,7 @@ class ModelConfigurationTest extends TestCase
     {
         $model = new Pangan();
 
-        $this->assertInstanceOf(BelongsTo::class, $model->mitra());
+        // Only test carts relationship as mitra relationship has been removed
         $this->assertInstanceOf(HasMany::class, $model->carts());
     }
 

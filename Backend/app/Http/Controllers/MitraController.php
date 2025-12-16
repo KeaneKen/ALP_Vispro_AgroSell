@@ -7,6 +7,7 @@ use App\Models\Mitra;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class MitraController extends Controller
 {
@@ -88,6 +89,104 @@ class MitraController extends Controller
                 'success' => false,
                 'message' => 'Mitra not found'
             ], 404);
+        }
+    }
+    
+    // Upload profile picture
+    public function uploadProfilePicture(Request $request, $idMitra) {
+        $validator = Validator::make($request->all(), [
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        try {
+            $mitra = Mitra::findOrFail($idMitra);
+            
+            // Delete old profile picture if exists
+            if ($mitra->profile_picture && Storage::exists('public/profile_pictures/' . $mitra->profile_picture)) {
+                Storage::delete('public/profile_pictures/' . $mitra->profile_picture);
+            }
+            
+            // Store new profile picture
+            $file = $request->file('profile_picture');
+            $filename = $idMitra . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/profile_pictures', $filename);
+            
+            // Update database
+            $mitra->profile_picture = $filename;
+            $mitra->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture uploaded successfully',
+                'data' => [
+                    'profile_picture_url' => asset('storage/profile_pictures/' . $filename)
+                ]
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload profile picture',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    // Login mitra
+    public function login(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'Email_Mitra' => 'required|string|email',
+            'Password_Mitra' => 'required|string',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
+        try {
+            // Find mitra by email
+            $mitra = Mitra::where('Email_Mitra', $request->Email_Mitra)->first();
+            
+            if (!$mitra) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email tidak terdaftar'
+                ], 401);
+            }
+            
+            // Verify password with the hashed password in database
+            if (!Hash::check($request->Password_Mitra, $mitra->Password_Mitra)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password salah'
+                ], 401);
+            }
+            
+            // Login successful
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'data' => $mitra
+            ], 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Login failed',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

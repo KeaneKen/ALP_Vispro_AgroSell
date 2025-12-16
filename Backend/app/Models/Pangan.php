@@ -20,6 +20,8 @@ class Pangan extends Model
         'Deskripsi_Pangan',
         'Harga_Pangan',
         'idFoto_Pangan',
+        'Kategori_Pangan',
+        'category',
         'created_at',
         'updated_at',
     ];
@@ -32,5 +34,16 @@ class Pangan extends Model
     public function carts()
     {
         return $this->hasMany(Cart::class, 'idPangan', 'idPangan');
+    }
+
+    // Accessors for camelCase compatibility
+    public function getNamaPanganAttribute()
+    {
+        return $this->attributes['Nama_Pangan'] ?? null;
+    }
+
+    public function getSatuanAttribute()
+    {
+        return 'kg'; // Default unit
     }
 }

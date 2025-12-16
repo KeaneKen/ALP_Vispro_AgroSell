@@ -20,6 +20,7 @@ class Mitra extends Model
         'Email_Mitra',
         'Password_Mitra',
         'NoTelp_Mitra',
+        'profile_picture',
         'created_at',
         'updated_at',
     ];

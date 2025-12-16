@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Bumdes;
 use App\Models\Chat;
 use App\Models\Mitra;
+use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -46,6 +47,9 @@ class ChatController extends Controller
 
         $chat = Chat::create($data);
 
+        // Broadcast the message event for real-time updates
+        broadcast(new MessageSent($chat))->toOthers();
+
         return response()->json([
             'success' => true,
             'message' => 'Message sent successfully',
@@ -53,8 +57,18 @@ class ChatController extends Controller
         ], 201);
     }
 
-    public function conversation(string $mitraId, string $bumdesId)
+    public function conversation(Request $request)
     {
+        $mitraId = $request->query('idMitra');
+        $bumdesId = $request->query('idBumDes');
+
+        if (!$mitraId || !$bumdesId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'idMitra and idBumDes are required',
+            ], 400);
+        }
+
         if (! Mitra::whereKey($mitraId)->exists() || ! Bumdes::whereKey($bumdesId)->exists()) {
             return response()->json([
                 'success' => false,
