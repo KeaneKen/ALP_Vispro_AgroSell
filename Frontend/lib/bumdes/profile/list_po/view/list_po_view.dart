@@ -75,7 +75,7 @@ class _ListPoViewState extends State<ListPoView> {
                       ),
                     ),
                     title: Text(
-                      order['customer'],
+                      (order['customer'] ?? order['supplierName'] ?? '').toString(),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -83,7 +83,7 @@ class _ListPoViewState extends State<ListPoView> {
                       ),
                     ),
                     subtitle: Text(
-                      'Ambil Panen: ${order['harvestDate']}',
+                      'Ambil Panen: ${(order['harvestDate'] ?? order['deliveryDate'] ?? order['orderDate'] ?? '').toString()}',
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textSecondary,
@@ -92,11 +92,11 @@ class _ListPoViewState extends State<ListPoView> {
                     trailing: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(order['status']),
+                        color: _getStatusColor((order['status'] ?? '').toString()),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        order['status'],
+                        (order['status'] ?? '').toString(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -110,8 +110,8 @@ class _ListPoViewState extends State<ListPoView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Product List
-                            ...order['products'].map<Widget>((product) {
+                            // Product List (API may use 'items' or 'products')
+                            ...((order['items'] ?? order['products'] ?? []) as List).map<Widget>((product) {
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 12),
                                 padding: const EdgeInsets.all(12),
@@ -127,7 +127,7 @@ class _ListPoViewState extends State<ListPoView> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          product['name'],
+                                          (product['productName'] ?? product['name'] ?? '').toString(),
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600,
@@ -135,7 +135,7 @@ class _ListPoViewState extends State<ListPoView> {
                                           ),
                                         ),
                                         Text(
-                                          product['quantity'],
+                                          (product['quantity'] ?? '').toString(),
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: AppColors.primary,
@@ -155,7 +155,7 @@ class _ListPoViewState extends State<ListPoView> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      product['plantStatus'],
+                                      (product['plantStatus'] ?? product['status'] ?? '').toString(),
                                       style: TextStyle(
                                         fontSize: 13,
                                         color: AppColors.textSecondary,

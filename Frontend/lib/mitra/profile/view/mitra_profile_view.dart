@@ -3,6 +3,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../viewmodel/mitra_profile_viewmodel.dart';
 import '../../po/view/detail_po_view.dart';
 import '../../po/view/form_po_view.dart';
+import '../../order_history/mitra_order_history_route.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -132,13 +133,26 @@ class _MitraProfileViewState extends State<MitraProfileView> {
                       top: 10,
                       bottom: 5,
                     ),
-                    child: Text(
-                      'Pesanan Saya',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Pesanan Saya',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () => MitraOrderHistoryRoute.navigate(context),
+                          icon: const Icon(Icons.history),
+                          label: const Text('Lihat Semua'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -180,8 +194,8 @@ class _MitraProfileViewState extends State<MitraProfileView> {
                             color: AppColors.primary,
                           ),
                           tooltip: 'Tambah Pre-Order',
-                          onPressed: () {
-                            showDialog(
+                          onPressed: () async {
+                            final result = await showDialog(
                               context: context,
                               builder: (context) => Dialog(
                                 insetPadding: const EdgeInsets.symmetric(
@@ -207,6 +221,11 @@ class _MitraProfileViewState extends State<MitraProfileView> {
                                 ),
                               ),
                             );
+
+                            // If the form returned true (successful create), reload pre-orders
+                            if (result == true) {
+                              await _viewModel.fetchProfileData();
+                            }
                           },
                         ),
                       ],
@@ -300,15 +319,25 @@ class _MitraProfileViewState extends State<MitraProfileView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _viewModel.mitraName,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                  Text(
+                    _viewModel.mitraName,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  if (_viewModel.error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6.0),
+                      child: Text(
+                        'Error loading profile: ${_viewModel.error}',
+                        style: TextStyle(fontSize: 12, color: Colors.red.shade600),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                 Text(
                   _viewModel.mitraType,
                   style: TextStyle(fontSize: 14, color: AppColors.textSecondary),

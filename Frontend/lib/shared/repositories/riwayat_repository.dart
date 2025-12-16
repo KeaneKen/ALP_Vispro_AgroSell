@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../core/config/api_config.dart';
+import '../../core/config/api_config.dart';
 
 class RiwayatRepository {
   final Dio _dio = Dio();

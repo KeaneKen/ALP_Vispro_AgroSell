@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
+import '../../mitra/profile/viewmodel/mitra_profile_viewmodel.dart';
 import '../cart/viewmodel/cart_viewmodel.dart';
 
 class PaymentGatewayView extends StatefulWidget {
@@ -545,7 +546,12 @@ class _PaymentGatewayViewState extends State<PaymentGatewayView> {
           children: [
             Icon(Icons.warning_amber, color: Colors.orange.shade700),
             const SizedBox(width: 8),
-            const Text('Konfirmasi Pembayaran'),
+            const Expanded(
+              child: Text(
+                'Konfirmasi Pembayaran',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -669,83 +675,27 @@ class _PaymentGatewayViewState extends State<PaymentGatewayView> {
     if (!mounted) return;
 
     if (success) {
-      // Show success animation/dialog
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade50,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle,
-                  color: Colors.green.shade600,
-                  size: 64,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Pembayaran Berhasil!',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'ID Transaksi: $_transactionId',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                  fontFamily: 'monospace',
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Pesanan Anda sedang diproses',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade700,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+      // Show short snackbar and navigate to Mitra profile so the new order appears
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Pembayaran berhasil — pesanan sedang diproses (ID: $_transactionId)'),
+            backgroundColor: Colors.green.shade600,
+            duration: const Duration(seconds: 2),
           ),
-          actions: [
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // Close dialog first
-                  Navigator.of(context).pop();
-                  // Use a microtask to avoid Navigator lock
-                  Future.microtask(() {
-                    if (mounted) {
-                      // Pop back to home using popUntil
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    }
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('Kembali ke Beranda'),
-              ),
-            ),
-          ],
-        ),
-      );
+        );
+
+        // Return to app root (home) instead of opening profile directly
+        Future.microtask(() {
+          if (mounted) {
+            Navigator.of(context).popUntil((route) => route.isFirst || route.settings.name == '/main');
+            // Also trigger a profile refresh (singleton viewmodel)
+            try {
+              MitraProfileViewModel().fetchProfileData();
+            } catch (_) {}
+          }
+        });
+      }
     } else {
       // Show error dialog
       showDialog(

@@ -15,8 +15,10 @@ class PORoute {
           settings: settings,
         );
       case '/po-detail':
+        final poId = args is String ? args : null;
+        if (poId == null) return null;
         return MaterialPageRoute(
-          builder: (_) => DetailPOView(poId: args as String),
+          builder: (_) => DetailPOView(poId: poId),
           settings: settings,
         );
       case '/po-form':

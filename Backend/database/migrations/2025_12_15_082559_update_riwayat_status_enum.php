@@ -12,8 +12,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop the old enum column and recreate with new values
-        DB::statement("ALTER TABLE riwayat MODIFY COLUMN status ENUM('processing', 'given_to_courier', 'on_the_way', 'arrived', 'completed', 'cancelled') DEFAULT 'processing'");
+        $driver = DB::getDriverName();
+
+        // SQLite doesn't support MODIFY/ENUM; fallback to VARCHAR change
+        if ($driver === 'sqlite') {
+            Schema::table('riwayat', function (Blueprint $table) {
+                $table->string('status', 50)->default('processing')->change();
+            });
+        } else {
+            // MySQL/MariaDB path: alter enum values
+            DB::statement("ALTER TABLE riwayat MODIFY COLUMN status ENUM('processing', 'given_to_courier', 'on_the_way', 'arrived', 'completed', 'cancelled') DEFAULT 'processing'");
+        }
     }
 
     /**
@@ -21,7 +30,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert to old enum values
-        DB::statement("ALTER TABLE riwayat MODIFY COLUMN status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending'");
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            Schema::table('riwayat', function (Blueprint $table) {
+                $table->string('status', 50)->default('pending')->change();
+            });
+        } else {
+            // Revert to old enum values for MySQL/MariaDB
+            DB::statement("ALTER TABLE riwayat MODIFY COLUMN status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending'");
+        }
     }
 };

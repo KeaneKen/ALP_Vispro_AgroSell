@@ -12,9 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Convert to VARCHAR to support the new enum values
-        // MySQL doesn't support ALTER ENUM easily, so we use VARCHAR
-        DB::statement("ALTER TABLE riwayat MODIFY COLUMN status VARCHAR(50) DEFAULT 'processing'");
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            Schema::table('riwayat', function (Blueprint $table) {
+                $table->string('status', 50)->default('processing')->change();
+            });
+        } else {
+            // Convert to VARCHAR to support the new enum values (MySQL/MariaDB)
+            DB::statement("ALTER TABLE riwayat MODIFY COLUMN status VARCHAR(50) DEFAULT 'processing'");
+        }
     }
 
     /**
@@ -22,6 +29,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE riwayat MODIFY COLUMN status VARCHAR(50) DEFAULT 'processing'");
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            Schema::table('riwayat', function (Blueprint $table) {
+                $table->string('status', 50)->default('processing')->change();
+            });
+        } else {
+            DB::statement("ALTER TABLE riwayat MODIFY COLUMN status VARCHAR(50) DEFAULT 'processing'");
+        }
     }
 };

@@ -135,24 +135,33 @@ class DashboardViewModel extends ChangeNotifier {
       'beras.jpg': 'padi 1.jpg',
       'gabah.jpg': 'padi 2.jpg',
       'padi.jpg': 'padi 3.jpg',
-      'jagung.jpg': 'jagung 1.jpg',
-      'jagung_pipil.jpg': 'jagung 2.jpg',
-      'jagung_manis.jpg': 'jagung 3.jpg',
+      'jagung.jpg': 'padi 1.jpg',
+      'jagung_pipil.jpg': 'padi 2.jpg',
+      'jagung_manis.jpg': 'padi 3.jpg',
       'cabai_merah.jpg': 'cabe 1.jpg',
       'cabai_rawit.jpg': 'cabe 2.jpg',
       'cabai.jpg': 'cabe 3.jpg',
       // For products without specific images, use based on ID pattern
-      'kedelai.jpg': 'jagung_manis.png',
+      'kedelai.jpg': 'padi 1.jpg',
       'singkong.jpg': 'padi 1.jpg',
       'ubi.jpg': 'padi 2.jpg',
-      'kentang.jpg': 'jagung 1.jpg',
-      'kacang_hijau.jpg': 'jagung 2.jpg',
+      'kentang.jpg': 'padi 1.jpg',
+      'kacang_hijau.jpg': 'padi 2.jpg',
       'gandum.jpg': 'padi 3.jpg',
       'sagu.jpg': 'jagung 3.jpg',
     };
     
+    // If the database already contains an asset filename (e.g. 'cabe 1.jpg', 'padi 1.jpg'),
+    // use it directly so the seeder can store frontend filenames.
+    if (dbImageName.isNotEmpty) {
+      final lower = dbImageName.toLowerCase();
+      if (lower.startsWith('cabe') || lower.startsWith('padi') || lower.startsWith('jagung') || lower.contains('padi') || lower.contains('cabe') || lower.contains('jagung')) {
+        return 'assets/images/$dbImageName';
+      }
+    }
+
     // Get the mapped image or use a default based on product ID
-    String assetFile = imageMapping[dbImageName] ?? 'jagung_manis.png';
+    String assetFile = imageMapping[dbImageName] ?? 'padi 1.jpg';
     
     // Special handling for specific product IDs if needed
     if (dbImageName.isEmpty) {
@@ -164,14 +173,14 @@ class DashboardViewModel extends ChangeNotifier {
           break;
         case 'P002':
         case 'P011':
-          assetFile = 'jagung 1.jpg';
+          assetFile = 'padi 1.jpg';
           break;
         case 'P012':
         case 'P013':
           assetFile = 'cabe 1.jpg';
           break;
-        default:
-          assetFile = 'jagung_manis.png';
+          default:
+          assetFile = 'padi 1.jpg';
       }
     }
     

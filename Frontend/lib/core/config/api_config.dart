@@ -2,7 +2,7 @@ class ApiConfig {
   // Base URL for API
 
   // Android emulator (AVD)
-  static const String baseUrl = 'http://10.0.2.2:8000/api';
+  static const String baseUrl = 'http://10.30.204.119:8000/api';
 
   // iOS simulator
   static const String baseUrlIOS = 'http://localhost:8000/api';

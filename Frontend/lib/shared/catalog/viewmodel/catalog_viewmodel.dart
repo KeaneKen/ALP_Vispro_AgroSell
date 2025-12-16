@@ -23,14 +23,21 @@ class CatalogViewModel extends ChangeNotifier {
   String _getCategoryImage(String category, String? idFotoPangan) {
     // First, try to match specific product images from assets
     if (idFotoPangan != null && idFotoPangan.isNotEmpty) {
-      // Map database image names to actual asset files
+      final lower = idFotoPangan.toLowerCase();
+
+      // If the database stores the actual asset filename (e.g. 'cabe 1.jpg'), use it directly
+      if (lower.startsWith('cabe') || lower.startsWith('padi') || lower.startsWith('jagung') || lower.contains('cabe') || lower.contains('padi') || lower.contains('jagung')) {
+        return 'assets/images/$idFotoPangan';
+      }
+
+      // Map legacy database image names to actual asset files
       final imageMap = {
         'cabai_merah.jpg': 'assets/images/cabe 1.jpg',
         'cabai_rawit.jpg': 'assets/images/cabe 2.jpg',
         'cabai.jpg': 'assets/images/cabe 3.jpg',
-        'jagung.jpg': 'assets/images/jagung 1.jpg',
-        'jagung_pipil.jpg': 'assets/images/jagung 2.jpg',
-        'jagung_manis.png': 'assets/images/jagung_manis.png',
+         'jagung.jpg': 'assets/images/padi 1.jpg',
+         'jagung_pipil.jpg': 'assets/images/padi 2.jpg',
+         'jagung_manis.png': 'assets/images/padi 3.jpg',
         'beras.jpg': 'assets/images/padi 1.jpg',
         'gabah.jpg': 'assets/images/padi 2.jpg',
         'padi.jpg': 'assets/images/padi 3.jpg',
@@ -46,15 +53,15 @@ class CatalogViewModel extends ChangeNotifier {
       case 'padi':
         return 'assets/images/padi 1.jpg';
       case 'jagung':
-        return 'assets/images/jagung 1.jpg';
+         return 'assets/images/padi 1.jpg';
       case 'cabai':
         return 'assets/images/cabe 1.jpg';
       case 'sayuran':
-        return 'assets/images/jagung_manis.png'; // Use available image as placeholder
+         return 'assets/images/padi 1.jpg'; // Use available image as placeholder
       case 'buah':
-        return 'assets/images/jagung_manis.png'; // Use available image as placeholder
+         return 'assets/images/padi 1.jpg'; // Use available image as placeholder
       default:
-        return 'assets/images/jagung_manis.png'; // Default fallback
+         return 'assets/images/padi 1.jpg'; // Default fallback
     }
   }
 

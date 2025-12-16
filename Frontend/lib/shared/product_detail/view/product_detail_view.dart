@@ -79,7 +79,7 @@ class _ProductDetailViewState extends State<ProductDetailView> {
                       background: Hero(
                         tag: 'product_${_viewModel.product!['name'] ?? 'unknown'}',
                         child: Image.asset(
-                          _viewModel.product!['image'] ?? 'assets/images/jagung_manis.png',
+                          _viewModel.product!['image'] ?? 'assets/images/padi 1.jpg',
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(

@@ -186,7 +186,12 @@ class _FormPOViewState extends State<FormPOView> {
         content: const Text("Pre-Order berhasil disimpan 🎉"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              // Close the success dialog
+              Navigator.pop(context);
+              // Close the parent PO dialog and return `true` so the caller can refresh
+              Navigator.pop(context, true);
+            },
             child: const Text("OK"),
           )
         ],

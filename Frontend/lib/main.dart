@@ -13,6 +13,7 @@ import 'shared/notification/view/notification_view.dart';
 import 'mitra/profile/view/mitra_profile_view.dart';
 import 'bumdes/profile/view/bumdes_profile_view.dart';
 import 'core/services/auth_service.dart';
+import 'mitra/profile/viewmodel/mitra_profile_viewmodel.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +56,8 @@ class AgroSellApp extends StatelessWidget {
         '/register': (context) => const RegisterView(),
         '/forgot-password': (context) => const ForgotPasswordView(),
         '/main': (context) => const MainScaffold(),
+        '/mitra-profile': (context) => const MitraProfileView(),
+        '/bumdes-profile': (context) => const BumdesProfileView(),
       },
     );
   }
@@ -104,6 +107,12 @@ class _MainScaffoldState extends State<MainScaffold> {
           setState(() {
             _currentIndex = index;
           });
+          // If Profile tab selected, trigger profile refresh (ensures latest data)
+          if (index == 3) {
+            try {
+              MitraProfileViewModel().fetchProfileData();
+            } catch (_) {}
+          }
         },
       ),
     );

@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../list_po/view/list_po_view.dart';
 import '../dikirim/view/dikirim_view.dart';
 import '../grafik/view/grafik_view.dart';
+import '../../order_management/bumdes_order_management_route.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -111,6 +112,26 @@ class _BumdesProfileViewState extends State<BumdesProfileView> {
                 // Stats Cards
                 SliverToBoxAdapter(
                   child: _buildStatsCards(),
+                ),
+                
+                // Order Management Section
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ElevatedButton.icon(
+                      onPressed: () => BumdesOrderManagementRoute.navigate(context),
+                      icon: const Icon(Icons.assignment),
+                      label: const Text('Kelola Pesanan'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
                 
                 // Price Updates Section (menggantikan Grafik)

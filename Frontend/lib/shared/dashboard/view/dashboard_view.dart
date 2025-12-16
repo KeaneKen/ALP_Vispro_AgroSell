@@ -3,6 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/config/api_config.dart';
 import '../viewmodel/dashboard_viewmodel.dart';
 import '../../product_detail/product_detail_route.dart';
+import '../../catalog/view/catalog_view.dart';
 import '../../cart/cart_route.dart';
 import '../../chat_list/chat_list_route.dart';
 import '../../../core/services/auth_service.dart';
@@ -195,8 +196,14 @@ class _DashboardViewState extends State<DashboardView> {
                 
                 const SizedBox(height: 16),
 
-                // Banner Preorder
-                Container(
+                // Banner Preorder (clickable -> open Catalog)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const CatalogView()),
+                    );
+                  },
+                  child: Container(
                   width: double.infinity,
                   height: 140,
                   decoration: BoxDecoration(
@@ -328,7 +335,8 @@ class _DashboardViewState extends State<DashboardView> {
                     ],
                   ),
                 ),
-
+                ),
+                
                 const SizedBox(height: 20),
 
                 // Featured Products Section

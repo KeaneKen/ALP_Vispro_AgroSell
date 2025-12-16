@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/mitra_repository.dart';
 import '../../../core/services/riwayat_repository.dart';
+import '../../../core/services/preorder_repository.dart';
 import '../../../core/models/mitra_model.dart';
 import '../../../core/models/riwayat_model.dart';
 import '../../../core/config/api_config.dart';
@@ -52,9 +53,17 @@ class PreOrderItem {
 
 // --- VIEWMODEL ---
 class MitraProfileViewModel extends ChangeNotifier {
+  // Singleton instance so other parts of the app can request a refresh
+  static final MitraProfileViewModel _instance = MitraProfileViewModel._internal();
+  factory MitraProfileViewModel() => _instance;
+  MitraProfileViewModel._internal() {
+    fetchProfileData();
+  }
+
   final AuthService _authService = AuthService();
   final MitraRepository _mitraRepository = MitraRepository();
   final RiwayatRepository _riwayatRepository = RiwayatRepository();
+  final PreOrderRepository _preOrderRepository = PreOrderRepository();
   
   String _mitraName = 'Loading...';
   String _mitraType = 'Loading...';
@@ -82,8 +91,33 @@ class MitraProfileViewModel extends ChangeNotifier {
   // Getter untuk memeriksa status expand
   bool isExpanded(String orderId) => _expandedOrderIds.contains(orderId);
 
-  MitraProfileViewModel() {
-    fetchProfileData();
+  
+
+  /// Fetch pre-orders from backend and map to `PreOrderItem`
+  Future<void> _fetchPreOrders(String mitraId) async {
+    try {
+      final data = await _preOrderRepository.getAllPreOrders(idMitra: mitraId);
+      _preOrders = data.map((item) {
+        final id = item['id']?.toString() ?? '';
+        final name = item['name'] ?? item['nama'] ?? 'Produk';
+        final harvest = item['harvest_time'] ?? item['harvestTime'] ?? item['panen'] ?? '';
+        String image = 'assets/images/default.jpg';
+        final imgField = item['image'] ?? item['image_url'] ?? item['gambar'];
+        if (imgField != null && imgField.toString().isNotEmpty) {
+          image = imgField.toString();
+        }
+        return PreOrderItem(
+          id: id,
+          name: name,
+          harvestTime: harvest,
+          imageUrl: image,
+        );
+      }).toList();
+      debugPrint('✅ Loaded ${_preOrders.length} pre-orders for mitra $mitraId');
+    } catch (e) {
+      debugPrint('⚠️ Failed to load pre-orders: $e');
+      _preOrders = [];
+    }
   }
 
   Future<void> fetchProfileData() async {
@@ -119,21 +153,8 @@ class MitraProfileViewModel extends ChangeNotifier {
       // Fetch real order history from backend
       await _fetchOrderHistory();
       
-      // For now, keep sample data for pre-orders (can be replaced with real data if backend exists)
-      _preOrders = [
-        PreOrderItem(
-          id: '1',
-          name: 'Padi',
-          harvestTime: 'Panen dalam waktu 2 bulan',
-          imageUrl: 'assets/images/padi 2.jpg',
-        ),
-        PreOrderItem(
-          id: '2',
-          name: 'Jagung',
-          harvestTime: 'Panen dalam waktu 1 Minggu',
-          imageUrl: 'assets/images/jagung 2.jpg',
-        ),
-      ];
+      // Load pre-orders from backend for this Mitra
+      await _fetchPreOrders(mitraId);
       
       debugPrint('✅ Mitra profile loaded: $mitraName');
     } catch (e) {
@@ -191,7 +212,7 @@ class MitraProfileViewModel extends ChangeNotifier {
           productName = riwayat.payment!.cart!.pangan!.namaPangan;
           // You can add image mapping logic here if needed
           if (productName.toLowerCase().contains('jagung')) {
-            imageUrl = 'assets/images/jagung 1.jpg';
+            imageUrl = 'assets/images/padi 1.jpg';
           } else if (productName.toLowerCase().contains('cabai') || productName.toLowerCase().contains('cabe')) {
             imageUrl = 'assets/images/cabe 1.jpg';
           } else if (productName.toLowerCase().contains('padi')) {

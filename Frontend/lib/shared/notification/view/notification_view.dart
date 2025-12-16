@@ -161,19 +161,26 @@ class _NotificationViewState extends State<NotificationView> {
 
   // Helper method to get product image
   String _getProductImage(String category, String idFotoPangan) {
+    if (idFotoPangan.isNotEmpty) {
+      final lower = idFotoPangan.toLowerCase();
+      if (lower.startsWith('cabe') || lower.startsWith('padi') || lower.startsWith('jagung') || lower.contains('cabe') || lower.contains('padi') || lower.contains('jagung')) {
+        return 'assets/images/$idFotoPangan';
+      }
+    }
+
     final imageMapping = {
       'beras.jpg': 'padi 1.jpg',
       'gabah.jpg': 'padi 2.jpg',
       'padi.jpg': 'padi 3.jpg',
-      'jagung.jpg': 'jagung 1.jpg',
-      'jagung_pipil.jpg': 'jagung 2.jpg',
-      'jagung_manis.jpg': 'jagung 3.jpg',
+      'jagung.jpg': 'padi 1.jpg',
+      'jagung_pipil.jpg': 'padi 2.jpg',
+      'jagung_manis.jpg': 'padi 3.jpg',
       'cabai_merah.jpg': 'cabe 1.jpg',
-      'cabai_hijau.jpg': 'cabe 2.jpg',
-      'cabai_rawit.jpg': 'cabe 3.jpg',
+      'cabai_rawit.jpg': 'cabe 2.jpg',
+      'cabai.jpg': 'cabe 3.jpg',
     };
 
-    final assetFile = imageMapping[idFotoPangan] ?? 'jagung_manis.png';
+    final assetFile = imageMapping[idFotoPangan] ?? 'padi 1.jpg';
     return 'assets/images/$assetFile';
   }
 
