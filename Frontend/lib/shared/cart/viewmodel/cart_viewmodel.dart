@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/debouncer.dart';
 import '../../../core/services/cart_repository.dart';
 import '../../../core/services/payment_repository.dart';
 import '../../../core/services/riwayat_repository.dart';
@@ -17,6 +18,7 @@ class CartViewModel extends ChangeNotifier {
   final Set<int> _selectedIndices = {};
   bool _isLoading = false;
   String? _errorMessage;
+  final Debouncer _debouncer = Debouncer();
 
   List<Map<String, dynamic>> get cartItems => _cartItems;
   Set<int> get selectedIndices => _selectedIndices;
@@ -165,25 +167,27 @@ class CartViewModel extends ChangeNotifier {
   }
 
   /// Update item quantity - updates in backend database
-  Future<void> updateQuantity(int index, int newQuantity) async {
+  /// Schedule quantity update with debounce to prevent rapid backend calls.
+  void scheduleUpdateQuantity(int index, int newQuantity, {Duration debounce = const Duration(milliseconds: 350)}) {
     if (index < 0 || index >= _cartItems.length || newQuantity <= 0) return;
 
-    try {
-      final cartId = _cartItems[index]['cartId'] as String?;
-      
-      if (cartId != null && cartId.isNotEmpty) {
-        // Update in backend
+    final cartId = _cartItems[index]['cartId'] as String?;
+    if (cartId == null || cartId.isEmpty) return;
+
+    // Update local immediately for responsive UI
+    _cartItems[index]['quantity'] = newQuantity;
+    notifyListeners();
+
+    // Debounce the backend update keyed by cartId to collapse rapid updates
+    _debouncer.run('updateQty-$cartId', debounce, () async {
+      try {
         await _cartRepository.updateCartItem(cartId, newQuantity);
+      } catch (e) {
+        _errorMessage = 'Failed to update quantity: $e';
+        notifyListeners();
+        debugPrint('Error updating quantity: $e');
       }
-      
-      // Update local list
-      _cartItems[index]['quantity'] = newQuantity;
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = 'Failed to update quantity: $e';
-      notifyListeners();
-      debugPrint('Error updating quantity: $e');
-    }
+    });
   }
 
   void incrementQuantity(int index) {
