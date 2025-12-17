@@ -376,8 +376,10 @@ class _CatalogViewState extends State<CatalogView> {
                   // Price
                   Text(
                     product['price']!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       color: AppColors.secondary,
                       fontWeight: FontWeight.w600,
                     ),

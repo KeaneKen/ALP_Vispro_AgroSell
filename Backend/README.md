@@ -1,3 +1,110 @@
+ALP Vispro — Backend (Laravel)
+
+This repository contains the Laravel-based backend API used by the ALP Vispro frontend Flutter application. It provides product (pangan) management, pre-order and order handling, authentication, and auxiliary services such as seeding and queue processing.
+
+## Overview
+
+The backend exposes a RESTful API for managing products, shopping carts, pre-orders, payments, transaction history, and real-time messaging between Mitra and users. It is implemented using Laravel and follows standard framework conventions.
+
+## Tech Stack
+
+- PHP 8.1+ (8.2 recommended)
+- Laravel 9/10/11 (project-compatible)
+- SQLite / MySQL / PostgreSQL (configured via `.env`)
+- Composer for dependency management
+- Soketi / Pusher-compatible config for WebSockets
+
+## Quick Setup (Local Development)
+
+Prerequisites:
+
+- PHP 8.1+
+- Composer
+- Node.js / npm (optional for asset pipelines)
+
+Steps:
+
+1. Copy the example environment file and configure values:
+
+   - Windows / PowerShell
+   ```powershell
+   copy .env.example .env
+   ```
+
+2. Install PHP dependencies:
+
+   ```bash
+   composer install
+   ```
+
+3. Generate application key:
+
+   ```bash
+   php artisan key:generate
+   ```
+
+4. Configure database in `.env` (SQLite is convenient for local development):
+
+   ```text
+   DB_CONNECTION=sqlite
+   DB_DATABASE=/full/path/to/database.sqlite
+   ```
+
+5. Run migrations and seeders:
+
+   ```bash
+   php artisan migrate
+   php artisan db:seed --class=PanganSeeder
+   ```
+
+6. Create storage symlink if needed:
+
+   ```bash
+   php artisan storage:link
+   ```
+
+7. Start the development server:
+
+   ```bash
+   php artisan serve
+   ```
+
+## Important Commands
+
+- `php artisan migrate` — run database migrations
+- `php artisan db:seed` — run seeders (use `--class` to target one)
+- `php artisan queue:work` — process jobs
+- `php artisan tinker` — interactive console
+
+## Seeding & Assets
+
+- `database/seeders/PanganSeeder.php` inserts product records and is implemented to be idempotent via `updateOrCreate`.
+- Ensure the image filenames returned by the API match the files under the frontend `assets/images/` directory (examples: `cabe 1.jpg`, `padi 1.jpg`).
+
+## WebSockets / Realtime
+
+- Broadcasting configuration is in `config/broadcasting.php` and `soketi.json`. Update `.env` to enable realtime features.
+
+## Testing
+
+- Run PHP unit tests:
+
+  ```bash
+  ./vendor/bin/phpunit
+  ```
+
+## Troubleshooting
+
+- Unique constraint errors during seeding: the seeder uses `updateOrCreate`, but if conflicts occur run `php artisan migrate:fresh --seed` in local dev.
+- Database connection issues: verify `.env` DB settings and that the DB file (for SQLite) is writable.
+
+## Contribution
+
+- Fork, create a feature branch, add tests, and open a pull request. Follow existing code style and migration practices.
+
+## License
+
+- See top-level repository license file.
 # Laravel Backend API - Agricultural Product Management System
 
 ## Overview
